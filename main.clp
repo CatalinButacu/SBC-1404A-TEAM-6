@@ -34,5 +34,7 @@
 (Nava N1 in terenul T1)
 (Nava N2 in terenul T1)
 
+
+testgit
 )
 
