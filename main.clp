@@ -34,9 +34,41 @@
 (Nava N1 in terenul T1)
 (Nava N2 in terenul T1)
 
-
-
+(Sistem ataca pozitia 2 1 din terenul T1 cu B)
+(Sistem ataca pozitia 2 4 din terenul T1 cu B)
 
 
 )
+
+(defrule Actualizare_Teren_atacat_B (declare (salience 1))
+(	or
+	?atac <-(Sistem ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+	?atac <-(Jucator ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+)
+
+?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
+
+=>
+
+(retract ?atac ?status_teren)
+(assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
+
+)
+
+(defrule Actualizare_Nava_atacata_B (declare (salience 1))
+(	or
+	?atac <-(Sistem ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+	?atac <-(Jucator ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+)
+
+?status_nava<-(Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+(Nava ?nava in terenul ?Teren)
+
+=>
+
+(retract ?atac ?status_nava)
+(assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
+
+)
+
 
