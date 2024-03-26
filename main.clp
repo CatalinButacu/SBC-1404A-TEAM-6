@@ -34,16 +34,23 @@
 (Nava N1 in terenul T1)
 (Nava N2 in terenul T1)
 
-(Sistem ataca pozitia 2 1 din terenul T1 cu B)
-(Sistem ataca pozitia 2 4 din terenul T1 cu B)
+;(Sistem ataca pozitia 2 1 din terenul T1 cu B)
+;(Sistem ataca pozitia 2 4 din terenul T1 cu B)
 
+(Sistem ataca pozitia 2 4 din terenul T1 cu AL)
 
+)
+
+(defglobal
+?*nr_linii* = 4
+?*nr_coloane* = 4
+?*coloana_atac_linie* = 1
 )
 
 (defrule Actualizare_Teren_atacat_B (declare (salience 1))
 (	or
-	?atac <-(Sistem ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
-	?atac <-(Jucator ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+	?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+	?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
 )
 
 ?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
@@ -57,8 +64,8 @@
 
 (defrule Actualizare_Nava_atacata_B (declare (salience 1))
 (	or
-	?atac <-(Sistem ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
-	?atac <-(Jucator ataca pozitia ?rand ?coloana din terenul ?Teren cu B)
+	?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+	?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
 )
 
 ?status_nava<-(Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
@@ -68,6 +75,42 @@
 
 (retract ?atac ?status_nava)
 (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
+
+)
+
+(defrule Atac_linie_sistem (declare (salience 10))
+
+?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
+
+=>
+
+(while (neq ?*coloana_atac_linie* ?*nr_coloane*)
+	do
+		(assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+		(bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
+)
+
+(assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+(bind ?*coloana_atac_linie* 1)
+(retract ?atac)
+
+)
+
+(defrule Atac_linie_jucator (declare (salience 10))
+
+?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
+
+=>
+
+(while (neq ?*coloana_atac_linie* ?*nr_coloane*)
+	do
+		(assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+		(bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
+)
+
+(assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+(bind ?*coloana_atac_linie* 1)
+(retract ?atac)
 
 )
 
