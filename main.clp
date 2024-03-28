@@ -6,7 +6,7 @@
 ;(Nava orizontala <ID_Navă> rând <ID_rând> pe coloanele <<< indici_coloane>>>)
 ;(Nava verticala <ID_Navă> coloana <ID_coloana> pe rândurile <<< indici_rânduri>>>)
 
-(Teren T1 pozitia 1 1 este liber)
+(Teren T1 pozitia 1 1 este atacat)
 (Teren T1 pozitia 1 2 este liber)
 (Teren T1 pozitia 1 3 este liber) 
 (Teren T1 pozitia 1 4 este liber)
@@ -23,8 +23,9 @@
 
 (Teren T1 pozitia 4 1 este ocupata de nava N2 si este neatacata)
 (Teren T1 pozitia 4 2 este liber)
-(Teren T1 pozitia 4 3 este liber) 
+(Teren T1 pozitia 4 3 este atacat) 
 (Teren T1 pozitia 4 4 este liber)
+
 
 
 (Nava orizontala N1 rand 2 pe coloanele 1 2 3)
@@ -115,3 +116,42 @@
 )
 
 
+
+(defrule Rule_Opening_File_Read
+	(declare (salience 100))
+    => 
+	(clear)
+	(close)
+	(open map.txt map "r")
+	(printout t "Faptele au fost actualizare dupa harta" crlf)
+)
+
+(defrule Rule_Closing_File_Read
+	(declare (salience 98))
+	=>
+	(close map)
+	(printout t "Fisierele au fost inchise" crlf)
+)
+
+(defrule Rule_Reading_Map
+    (declare (salience 99))
+    =>
+    (bind ?row_number 1)
+    (bind ?each_line (readline map))
+    (while (neq ?each_line EOF) do
+        (bind ?col_number 1)
+        (bind ?each_line_explode (str-explode ?each_line))
+        (while (neq (length ?each_line_explode) 0) do
+            (bind ?position_type (nth$ 1 ?each_line_explode))
+            (if (and (neq ?position_type liber) (neq ?position_type atacat))
+                then
+                (assert (Teren T1 pozitia ?row_number ?col_number este ocupata de nava  ?position_type si este neatacata))
+            else
+                (assert (Teren T1 pozitia ?row_number ?col_number este ?position_type))
+            )
+            (bind ?each_line_explode (rest$ ?each_line_explode))
+            (bind ?col_number (+ ?col_number 1))
+        )
+        (bind ?each_line (readline map))
+        (bind ?row_number (+ ?row_number 1))
+    )

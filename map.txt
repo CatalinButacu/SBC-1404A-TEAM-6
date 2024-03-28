@@ -1,11 +1,4 @@
-    1       2       3        4
-
-1  liber   liber   liber   liber
-2   N1      N1      N1     liber
-3   N2     liber   liber   liber
-4   N2     liber   liber   liber
-
-
-
-0       0         0      0
-x       x         1      2
+atacat liber ocupata liber 
+ocupata ocupata atacata liber 
+liber liber ocupata liber 
+liber ocupata liber atacat 
