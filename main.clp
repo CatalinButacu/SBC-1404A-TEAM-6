@@ -38,7 +38,8 @@
 ;(Sistem ataca pozitia 2 1 din terenul T1 cu B)
 ;(Sistem ataca pozitia 2 4 din terenul T1 cu B)
 
-(Sistem ataca pozitia 2 4 din terenul T1 cu AL)
+; (Sistem ataca pozitia 2 4 din terenul T1 cu AL)
+; (Sistem ataca pozitia 2 4 din terenul T1 cu S)
 
 )
 
@@ -113,6 +114,26 @@
 (bind ?*coloana_atac_linie* 1)
 (retract ?atac)
 
+)
+
+(defrule Atac_scanare_sistem (declare (salience 1))
+
+?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
+(Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
+=>
+
+(printout t "Exista o nava in zona scanata" crlf)
+(retract ?atac)
+)
+
+(defrule Atac_scanare_jucator (declare (salience 1))
+
+?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
+(Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
+=>
+
+(printout t "Exista o nava in zona scanata" crlf)
+(retract ?atac)
 )
 
 
