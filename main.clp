@@ -6,47 +6,27 @@
 ;(Nava orizontala <ID_Navă> rând <ID_rând> pe coloanele <<< indici_coloane>>>)
 ;(Nava verticala <ID_Navă> coloana <ID_coloana> pe rândurile <<< indici_rânduri>>>)
 
-(Teren T1 pozitia 1 1 este atacat)
-(Teren T1 pozitia 1 2 este liber)
-(Teren T1 pozitia 1 3 este liber) 
-(Teren T1 pozitia 1 4 este liber)
-
-(Teren T1 pozitia 2 1 este ocupata de nava N1 si este neatacata)
-(Teren T1 pozitia 2 2 este ocupata de nava N1 si este neatacata)
-(Teren T1 pozitia 2 3 este ocupata de nava N1 si este neatacata)
-(Teren T1 pozitia 2 4 este liber)
-
-(Teren T1 pozitia 3 1 este ocupata de nava N2 si este neatacata)
-(Teren T1 pozitia 3 2 este liber)
-(Teren T1 pozitia 3 3 este liber) 
-(Teren T1 pozitia 3 4 este liber)
-
-(Teren T1 pozitia 4 1 este ocupata de nava N2 si este neatacata)
-(Teren T1 pozitia 4 2 este liber)
-(Teren T1 pozitia 4 3 este atacat) 
-(Teren T1 pozitia 4 4 este liber)
-
-
-
 (Nava orizontala N1 rand 2 pe coloanele 1 2 3)
-(Nava verticala N2 coloana 1 pe randurile 2 3 4)
+(Nava verticala N2 coloana 1 pe randurile 3 4)
 
 
 (Nava N1 in terenul T1)
 (Nava N2 in terenul T1)
 
-;(Sistem ataca pozitia 2 1 din terenul T1 cu B)
-;(Sistem ataca pozitia 2 4 din terenul T1 cu B)
+(Sistem ataca pozitia 2 1 din terenul T1 cu B)
+(Sistem ataca pozitia 2 4 din terenul T1 cu B)
+(Sistem ataca pozitia 2 4 din terenul T1 cu AL)
 
-; (Sistem ataca pozitia 2 4 din terenul T1 cu AL)
-; (Sistem ataca pozitia 2 4 din terenul T1 cu S)
 
+(global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
+(update_map Yes) ; foosit pt actualizarea hartii
 )
 
 (defglobal
 ?*nr_linii* = 4
 ?*nr_coloane* = 4
 ?*coloana_atac_linie* = 1
+
 )
 
 (defrule Actualizare_Teren_atacat_B (declare (salience 1))
@@ -141,24 +121,25 @@
 (defrule Rule_Opening_File_Read
 	(declare (salience 100))
     => 
-	(clear)
 	(close)
-	(open map.txt map "r")
+	(open map_start.txt map_start "r")
 	(printout t "Faptele au fost actualizare dupa harta" crlf)
 )
+
 
 (defrule Rule_Closing_File_Read
 	(declare (salience 98))
 	=>
-	(close map)
+	(close map_start)
 	(printout t "Fisierele au fost inchise" crlf)
 )
+
 
 (defrule Rule_Reading_Map
     (declare (salience 99))
     =>
     (bind ?row_number 1)
-    (bind ?each_line (readline map))
+    (bind ?each_line (readline map_start))
     (while (neq ?each_line EOF) do
         (bind ?col_number 1)
         (bind ?each_line_explode (str-explode ?each_line))
@@ -173,6 +154,76 @@
             (bind ?each_line_explode (rest$ ?each_line_explode))
             (bind ?col_number (+ ?col_number 1))
         )
-        (bind ?each_line (readline map))
+        (bind ?each_line (readline map_start))
         (bind ?row_number (+ ?row_number 1))
     )
+)
+
+
+(defrule Rule_Opening_File_Write
+	(declare (salience 97))
+    =>
+	(open map_parcurs.txt map_parcurs "w")
+	(printout t "Putem scrie in map.txt" crlf)
+)
+
+(defrule Rule_Closing_File_Write
+	(declare (salience 95))
+	=>
+	(close map_parcurs)
+	(printout t "Fisierele au fost inchise" crlf)
+)
+
+
+
+(defrule Rule_Writing_In_Map
+    (declare (salience 96))
+	?Delete1 <-(update_map Yes)
+	?Delete2 <-(global_var ?row ?col)
+	(or (Teren T1 pozitia ?row ?col este ocupata de nava ?check si este ?atacat_sau_nu)
+		(Teren T1 pozitia ?row ?col este ?check)
+	)
+    =>
+	(if (<= ?row ?*nr_linii*)
+		then 
+			(printout map_parcurs ?check " " )
+			(printout t  ?row ?col ?check crlf)
+			
+			(if (< ?col ?*nr_coloane*)
+				then
+					(assert (global_var ?row (+ ?col 1)))
+				;	(retract ?Delete1)
+					(retract ?Delete2)
+	;				(assert (rule_writing_in_map 2))
+				else
+					(printout t  "else" crlf)
+					(retract ?Delete2)
+					(if (< ?row ?*nr_linii*)
+						then
+							(assert (global_var (+ ?row 1) 1))
+						else
+							(assert (global_var 1 1))
+							(assert (update_map No))
+							(retract ?Delete1)
+							(retract ?Delete2)
+					)
+						
+					(printout map_parcurs crlf)
+			)
+
+	)
+		
+	(printout t " am actualizat o pozitie" crlf)
+)
+
+
+
+(defrule Update_Map_Command   ; daca dai (assert (update_map_now)) se va face automat o rescrie completa a hartei cu variabilele actuale
+	(declare (salience 96))
+	?Delete1 <-(update_map_now)
+	?Delete2 <-(update_map No)
+	=>
+	(assert (update_map Yes))
+	(retract ?Delete1)
+	(retract ?Delete2)
+)
