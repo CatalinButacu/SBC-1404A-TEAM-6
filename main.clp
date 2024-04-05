@@ -145,7 +145,7 @@
         (bind ?each_line_explode (str-explode ?each_line))
         (while (neq (length ?each_line_explode) 0) do
             (bind ?position_type (nth$ 1 ?each_line_explode))
-            (if (and (neq ?position_type liber) (neq ?position_type atacat))
+            (if (and (neq ?position_type liber) (neq ?position_type atacata))
                 then
                 (assert (Teren T1 pozitia ?row_number ?col_number este ocupata de nava  ?position_type si este neatacata))
             else

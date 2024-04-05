@@ -1,4 +1,4 @@
-liber liber atacata atacata
+atacata atacata atacata atacata
 N2 N2 N2 liber 
 N3 liber atacata liber 
 N3 atacata liber atacat 
