@@ -205,13 +205,15 @@
     (test
         (if (or (and (eq ?rowHitIntern ?rowHit1) (eq ?colHitIntern ?colHit1)) (and (eq ?rowHitIntern ?rowHit2) (eq ?colHitIntern ?colHit2))) then
             (or 
+                ; TODO: find a way to better check for 2 hits ships, without duplicating the rule activation or redirect ships w/ 2hits to +3 ships method
                 (and (eq ?rowHit1 ?rowHit2) (> ?colHit1 ?colHit2) (eq ?rowHitIntern ?rowHit1) (neq ?rowHitIntern ?rowHit2) (printout t "Same row = 2 hits" crlf) ) ; same row
                 (and (eq ?colHit1 ?colHit2) (> ?rowHit1 ?rowHit2) (eq ?colHitIntern ?colHit1) (neq ?colHitIntern ?colHit2) (printout t "Same col = 2 hits" crlf) ) ; same col
             )               
         else
             (or
-                (and (printout t "Same row > 2 hits" crlf) FALSE (eq ?rowHit1 ?rowHit2 ?rowHitIntern) (not (and (> ?colHitIntern ?colHit1) (> ?colHitIntern ?colHit2))))
-                (and (printout t "Same col > 2 hits" crlf) FALSE (eq ?colHit1 ?colHit2 ?colHitIntern) (not (and (> ?rowHitIntern ?rowHit1) (> ?rowHitIntern ?rowHit2))))
+                ; TODO: fix that many fule activations on +3 hits
+                (and FALSE (eq ?rowHit1 ?rowHit2 ?rowHitIntern) (not (and (> ?colHitIntern ?colHit1) (> ?colHitIntern ?colHit2))))
+                (and FALSE (eq ?colHit1 ?colHit2 ?colHitIntern) (not (and (> ?rowHitIntern ?rowHit1) (> ?rowHitIntern ?rowHit2))))
             )    
         )
     )    
