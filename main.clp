@@ -20,6 +20,9 @@
 
 (global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
 (update_map Yes) ; foosit pt actualizarea hartii
+
+;(Sistem asteapta)
+(Sistem decide)
 )
 
 (defglobal
@@ -114,6 +117,92 @@
 
 (printout t "Exista o nava in zona scanata" crlf)
 (retract ?atac)
+)
+
+;;; SEARCH ALGO
+(defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
+    (declare (salience 20))
+    (Sistem decide)
+    (Teren T1 pozitia ?rowAttacked ?colAttacked este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
+    (Nava ?id_nava nu este distrusa)  
+    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))  ; check for no more planning actions
+
+    ; investigam teritoriul alaturat
+    (and ; in the MIDDLE - it fails for edges because some facts doesn't exist at moment in database
+        ; check UP state
+        (Teren T1 pozitia ?UP_rowAttack&:(eq ?UP_rowAttack (- ?rowAttacked 1)) ?UP_colAttack&:(eq ?UP_colAttack ?colAttacked) este $? ?stareUP&:(neq ?stareUP atacata))
+        ; check DOWN state
+        (Teren T1 pozitia ?DOWN_rowAttack&:(eq ?DOWN_rowAttack (+ ?rowAttacked 1)) ?DOWN_colAttack&:(eq ?DOWN_colAttack ?colAttacked) este $? ?stareDOWN&:(neq ?stareDOWN atacata))
+        ; check LEFT state
+        (Teren T1 pozitia ?LEFT_rowAttack&:(eq ?LEFT_rowAttack ?rowAttacked) ?LEFT_colAttack&:(eq ?LEFT_colAttack (- ?colAttacked 1)) este $? ?stareLEFT&:(neq ?stareLEFT atacata))
+        ; check RIGHT state
+        (Teren T1 pozitia ?RIGHT_rowAttack&:(eq ?RIGHT_rowAttack ?rowAttacked) ?RIGHT_colAttack&:(eq ?RIGHT_colAttack (+ ?colAttacked 1)) este $? ?stareRIGHT&:(neq ?stareRIGHT atacata))
+    )
+
+    ; TODO: add a way to check for edges
+    ; 
+    ; A solution would be to add dummy facts, like this example for UP:
+    ;   + (Teren T1 pozitia 0 <current_col> este $? ?) 
+    ; Explanations: in action zone algo check if an edge is Approacheble, so Sistem will never attack a dummy fact
+    ; Problem now is that this rule is filtering too much, edges fail at the (and ..) above
+
+    =>    
+
+    ; TODO: can check if are also not others planned attack for same position
+    ;
+
+    ; check for frontier edges - WARNING: it is not feasible with a 1x1 or 2x2 terrain
+    (bind ?is_UP_Approachable    (neq ?rowAttacked 1))
+    (bind ?is_DOWN_Approachable  (neq ?rowAttacked ?*nr_linii*))
+    (bind ?is_LEFT_Approachable  (neq ?colAttacked 1))
+    (bind ?is_RIGHT_Approachable (neq ?colAttacked ?*nr_coloane*))
+
+    (bind ?rowToAttack -1)
+    (bind ?colToAttack -1)
+
+    (bind ?rand (random 1 4))
+    (printout t ?rand crlf)
+    (while (neq ?rand 0) do
+        ; update attack zone if UP is unattacked
+        (if (and ?is_UP_Approachable (neq ?rand 0)) then 
+            (bind ?rand (- ?rand 1)) 
+            (bind ?rowToAttack ?UP_rowAttack) 
+            (bind ?colToAttack ?UP_colAttack)
+            (printout t "UP" crlf)
+        )
+
+        ; update attack zone if DOWN is unattacked
+        (if (and ?is_DOWN_Approachable (neq ?rand 0)) then 
+            (bind ?rand (- ?rand 1)) 
+            (bind ?rowToAttack ?DOWN_rowAttack) 
+            (bind ?colToAttack ?DOWN_colAttack)
+            (printout t "DOWN" crlf)
+        )
+
+        ; update attack zone if LEFT is unattacked
+        (if (and ?is_LEFT_Approachable (neq ?rand 0)) then 
+            (bind ?rand (- ?rand 1)) 
+            (bind ?rowToAttack ?LEFT_rowAttack) 
+            (bind ?colToAttack ?LEFT_colAttack)
+            (printout t "LEFT" crlf)
+        )
+
+        ; update attack zone if RIGHT is unattacked
+        (if (and ?is_RIGHT_Approachable (neq ?rand 0)) then 
+            (bind ?rand (- ?rand 1)) 
+            (bind ?rowToAttack ?RIGHT_rowAttack) 
+            (bind ?colToAttack ?RIGHT_colAttack)
+            (printout t "RIGHT" crlf)
+        )
+    )
+
+    (if (and (neq ?rowToAttack -1) (neq ?colToAttack -1)) then
+        (assert (Sistem ataca pozitia ?rowToAttack ?colToAttack din terenul T1 cu B))
+        (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf)
+    else
+        (printout t "[WARNING] Pozitii invalide gasite de met. CruceSearch" crlf)
+        (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf)
+    )
 )
 
 (defrule DeclareShipDistroyed "Invalidate a ship -> declare as a distroyed"
