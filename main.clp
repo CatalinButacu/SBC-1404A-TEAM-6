@@ -1,125 +1,112 @@
 (deffacts Ex1
 
-;(Teren <ID_Teren> poziția <rând> <coloana> este <stare>)
-;(Teren <ID_Teren> poziția <rând> <coloana> este ocupată de nava <ID_Navă> si este <stare_poziție_navă>)
-;(Nava <ID_Navă> în terenul <ID_Teren>)
-;(Nava orizontala <ID_Navă> rând <ID_rând> pe coloanele <<< indici_coloane>>>)
-;(Nava verticala <ID_Navă> coloana <ID_coloana> pe rândurile <<< indici_rânduri>>>)
+    ;(Teren <ID_Teren> poziția <rând> <coloana> este <stare>)
+    ;(Teren <ID_Teren> poziția <rând> <coloana> este ocupată de nava <ID_Navă> si este <stare_poziție_navă>)
+    ;(Nava <ID_Navă> în terenul <ID_Teren>)
+    ;(Nava orizontala <ID_Navă> rând <ID_rând> pe coloanele <<< indici_coloane>>>)
+    ;(Nava verticala <ID_Navă> coloana <ID_coloana> pe rândurile <<< indici_rânduri>>>)
+    ;(Sistem ataca pozitia <ID_rând> <ID_coloana> din terenul <ID_Teren> cu <ABILITY>)
 
-(Nava orizontala N1 rand 2 pe coloanele 1 2 3)
-(Nava verticala N2 coloana 1 pe randurile 3 4)
+    ; Notite structura aplicatie
+    ; T1 - client
+    ; T2 - sistem expert
 
+    ; Contor de stare pt Sistem: ia decizii sau asteapta input client 
+    ; (Sistem asteapta)
+    (Sistem decide)
 
-(Nava N1 in terenul T1)
-(Nava N2 in terenul T1)
+    ; (Teren T1 pozitia 2 3 este atacata)
+    (Nava N2 nu este distrusa)
+    (Nava N3 nu este distrusa)
 
-(Sistem ataca pozitia 2 1 din terenul T1 cu B)
-(Sistem ataca pozitia 2 4 din terenul T1 cu B)
-(Sistem ataca pozitia 2 4 din terenul T1 cu AL)
+    (Nava N2 in terenul T1)
+    (Nava N3 in terenul T1)   
 
+    (Nava orizontala N2 rand 2 pe coloanele 1 2 3 4)
+    (Nava verticala N3 coloana 1 pe randurile 3 4) 
 
-(global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
-(update_map Yes) ; foosit pt actualizarea hartii
-
-;(Sistem asteapta)
-(Sistem decide)
+    (global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
+    (update_map Yes) ; foosit pt actualizarea hartii
 )
+
 
 (defglobal
-?*nr_linii* = 4
-?*nr_coloane* = 4
-?*coloana_atac_linie* = 1
-
+    ?*nr_linii* = 4
+    ?*nr_coloane* = 4
+    ?*coloana_atac_linie* = 1
 )
 
+
+;;; UPDATE RULES
 (defrule Actualizare_Teren_atacat_B (declare (salience 1))
-(	or
-	?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-	?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-)
-
-?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
-
-=>
-
-(retract ?atac ?status_teren)
-(assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
-
+    (or
+        ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+        ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    )
+    ?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
+    =>
+    (retract ?atac ?status_teren)
+    (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 )
 
 (defrule Actualizare_Nava_atacata_B (declare (salience 1))
-(	or
-	?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-	?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    (or
+        ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+        ?atac <- (Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    )
+    ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+    (Nava ?nava in terenul ?Teren)
+    =>
+    (retract ?atac ?status_nava)
+    (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 )
 
-?status_nava<-(Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
-(Nava ?nava in terenul ?Teren)
 
-=>
-
-(retract ?atac ?status_nava)
-(assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
-
-)
-
+;;; DIRECT ATTACK RULES
 (defrule Atac_linie_sistem (declare (salience 10))
-
-?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
-
-=>
-
-(while (neq ?*coloana_atac_linie* ?*nr_coloane*)
-	do
-		(assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
-		(bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
-)
-
-(assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
-(bind ?*coloana_atac_linie* 1)
-(retract ?atac)
-
+    ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
+    =>
+    (while (neq ?*coloana_atac_linie* ?*nr_coloane*)
+        do
+            (assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+            (bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
+    )
+    (assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+    (bind ?*coloana_atac_linie* 1)
+    (retract ?atac)
 )
 
 (defrule Atac_linie_jucator (declare (salience 10))
-
-?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
-
-=>
-
-(while (neq ?*coloana_atac_linie* ?*nr_coloane*)
-	do
-		(assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
-		(bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
-)
-
-(assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
-(bind ?*coloana_atac_linie* 1)
-(retract ?atac)
-
+    ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu AL)
+    =>
+    (while (neq ?*coloana_atac_linie* ?*nr_coloane*)
+        do
+            (assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+            (bind ?*coloana_atac_linie* (+ ?*coloana_atac_linie* 1))
+    )
+    (assert (Jucator ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
+    (bind ?*coloana_atac_linie* 1)
+    (retract ?atac)
 )
 
 (defrule Atac_scanare_sistem (declare (salience 1))
-
-?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
-(Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
-=>
-
-(printout t "Exista o nava in zona scanata" crlf)
-(retract ?atac)
+    ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
+    (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
+    =>
+    (printout t "Exista o nava in zona scanata" crlf)
+    (retract ?atac)
 )
 
 (defrule Atac_scanare_jucator (declare (salience 1))
-
-?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
-(Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
-=>
-
-(printout t "Exista o nava in zona scanata" crlf)
-(retract ?atac)
+    ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
+    (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
+    =>
+    (printout t "Exista o nava in zona scanata" crlf)
+    (retract ?atac)
 )
 
-;;; SEARCH ALGO
+
+;;; SEARCH ALGO RULES
 (defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
     (declare (salience 20))
     (Sistem decide)
@@ -223,9 +210,8 @@
             )               
         else
             (or
-                ; TODO: fix for >= 3 hits 
-                (and FALSE (eq ?rowHit1 ?rowHit2 ?rowHitIntern) (not (and (> ?colHitIntern ?colHit1) (> ?colHitIntern ?colHit2))))
-                (and FALSE (eq ?colHit1 ?colHit2 ?colHitIntern) (not (and (> ?rowHitIntern ?rowHit1) (> ?rowHitIntern ?rowHit2))))
+                (and (printout t "Same row > 2 hits" crlf) FALSE (eq ?rowHit1 ?rowHit2 ?rowHitIntern) (not (and (> ?colHitIntern ?colHit1) (> ?colHitIntern ?colHit2))))
+                (and (printout t "Same col > 2 hits" crlf) FALSE (eq ?colHit1 ?colHit2 ?colHitIntern) (not (and (> ?rowHitIntern ?rowHit1) (> ?rowHitIntern ?rowHit2))))
             )    
         )
     )    
@@ -307,6 +293,7 @@
 )
 
 
+;;; FILES OPERATIONS
 (defrule Rule_Opening_File_Read
 	(declare (salience 100))
     => 
