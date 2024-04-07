@@ -205,6 +205,97 @@
     )
 )
 
+(defrule LineSearch "Sistem has info for at least TWO HIT POINTS"
+    (declare (salience 20))
+    (Sistem decide)
+    (Teren T1 pozitia ?rowHit1 ?colHit1 este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
+    (Teren T1 pozitia ?rowHit2 ?colHit2 este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
+    (Teren T1 pozitia ?rowHitIntern ?colHitIntern este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
+    (Nava ?id_nava nu este distrusa)
+    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))  ; check for no more planning actions
+   
+    ; check if last hits are on different rows or columns
+    (test
+        (if (or (and (eq ?rowHitIntern ?rowHit1) (eq ?colHitIntern ?colHit1)) (and (eq ?rowHitIntern ?rowHit2) (eq ?colHitIntern ?colHit2))) then
+            (or 
+                (and (eq ?rowHit1 ?rowHit2) (> ?colHit1 ?colHit2) (eq ?rowHitIntern ?rowHit1) (neq ?rowHitIntern ?rowHit2) (printout t "Same row = 2 hits" crlf) ) ; same row
+                (and (eq ?colHit1 ?colHit2) (> ?rowHit1 ?rowHit2) (eq ?colHitIntern ?colHit1) (neq ?colHitIntern ?colHit2) (printout t "Same col = 2 hits" crlf) ) ; same col
+            )               
+        else
+            (or
+                ; TODO: fix for >= 3 hits 
+                (and FALSE (eq ?rowHit1 ?rowHit2 ?rowHitIntern) (not (and (> ?colHitIntern ?colHit1) (> ?colHitIntern ?colHit2))))
+                (and FALSE (eq ?colHit1 ?colHit2 ?colHitIntern) (not (and (> ?rowHitIntern ?rowHit1) (> ?rowHitIntern ?rowHit2))))
+            )    
+        )
+    )    
+    
+    ; TODO: find an algo to take in count attacked zones
+    ;
+    ; investigam teritoriul alaturat
+    ;(and 
+        ; check UP terrain state
+        ;(Teren T1 pozitia ?UP_rowAttack&:(eq ?UP_rowAttack (- ?rowHit2 1)) ?UP_colAttack&:(eq ?UP_colAttack ?colHit2) este $? ?stareUP&:(neq ?stareUP atacata))
+        ; check DOWN terrain state
+        ;(Teren T1 pozitia ?DOWN_rowAttack&:(eq ?DOWN_rowAttack (+ ?rowHit1 1)) ?UP_colAttack&:(eq ?UP_colAttack ?colHit2) este $? ?stareDOWN&:(neq ?stareDOWN atacata))
+        ; check LEFT terrain state
+        ;(Teren T1 pozitia ?LEFT_rowAttack&:(eq ?LEFT_rowAttack (- ?colHit2 1)) ?UP_colAttack&:(eq ?UP_colAttack ?rowHit1) este $? ?stareLEFT&:(neq ?stareLEFT atacata))
+        ; check RIGHT terrain state
+        ;(Teren T1 pozitia ?RIGHT_rowAttack&:(eq ?RIGHT_rowAttack (+ ?colHit1 1)) ?UP_colAttack&:(eq ?UP_colAttack ?rowHit1) este $? ?stareRIGHT&:(neq ?stareRIGHT atacata))
+    ;)
+                        
+    =>
+    ; init    
+    (bind ?rowToAttack -1)
+    (bind ?colToAttack -1)
+
+    ; look after direction
+    (if (eq ?rowHit1 ?rowHit2) then (bind ?rowToAttack ?rowHit1))
+    (if (eq ?colHit1 ?colHit2) then (bind ?colToAttack ?colHit1))
+
+    (bind ?rand (random 1 2)) ; left or right / up or down
+
+    (if (eq ?colToAttack -1) then
+        ; Sistem attack on horizontal line 
+        (bind ?is_LEFT_Approachable (neq (min ?colHit1 ?colHit2) 1))
+        (bind ?is_RIGHT_Approachable (neq (max ?colHit1 ?colHit2) ?*nr_coloane*))
+
+        (if (and (eq ?rand 1) ?is_LEFT_Approachable) then 
+            (bind ?colToAttack (- (min ?colHit1 ?colHit2) 1))
+            (printout t "LEFT" crlf)
+        )
+
+        (if (and (neq ?rand 1) ?is_RIGHT_Approachable) then 
+            (bind ?colToAttack (+ (max ?colHit1 ?colHit2) 1))
+            (printout t "RIGHT" crlf)
+        )
+    ) 
+
+    (if (eq ?rowToAttack -1) then 
+        ; Sistem attack on vertical line       
+        (bind ?is_UP_Approachable (neq (min ?rowHit1 ?rowHit2) 1))
+        (bind ?is_DOWN_Approachable (neq (max ?rowHit1 ?rowHit2) ?*nr_linii*))
+
+        (if (and (eq ?rand 1) ?is_UP_Approachable) then
+            (bind ?rowToAttack (- (min ?rowHit1 ?rowHit2) 1))
+            (printout t "UP" crlf)
+        )
+
+        (if (and (neq ?rand 1) ?is_DOWN_Approachable) then
+            (bind ?rowToAttack (+ (max ?rowHit1 ?rowHit2) 1))
+            (printout t "DOWN" crlf)
+        )
+    )
+
+    (if (and (neq ?rowToAttack -1) (neq ?colToAttack -1)) then
+        (assert (Sistem ataca pozitia ?rowToAttack ?colToAttack din terenul T1 cu B))
+        (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf)
+    else
+        (printout t "[WARNING] Pozitii invalide gasite de met. LineSearch" crlf)
+        (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf)
+    )
+)
+
 (defrule DeclareShipDistroyed "Invalidate a ship -> declare as a distroyed"
     (declare (salience 50))
     ?idx <- (Nava ?id nu este distrusa)
