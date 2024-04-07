@@ -116,6 +116,15 @@
 (retract ?atac)
 )
 
+(defrule DeclareShipDistroyed "Invalidate a ship -> declare as a distroyed"
+    (declare (salience 50))
+    ?idx <- (Nava ?id nu este distrusa)
+    (not (Teren T1 pozitia ? ? este ocupata de nava ?id si este neatacata))
+    =>
+    (retract ?idx)
+    (assert (Nava ?id este distrusa))
+    (printout t "Nava " ?id " a fost declarata distrusa!" crlf)
+)
 
 
 (defrule Rule_Opening_File_Read
