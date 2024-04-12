@@ -117,14 +117,19 @@
     ; investigam teritoriul alaturat
     (and ; in the MIDDLE - it fails for edges because some facts doesn't exist at moment in database
         ; check UP state
-        (Teren T1 pozitia ?UP_rowAttack&:(eq ?UP_rowAttack (- ?rowAttacked 1)) ?UP_colAttack&:(eq ?UP_colAttack ?colAttacked) este $? ?stareUP&:(neq ?stareUP atacata))
+        (Teren T1 pozitia ?UP_rowAttack&:(eq ?UP_rowAttack (- ?rowAttacked 1)) ?UP_colAttack&:(eq ?UP_colAttack ?colAttacked) este $? ?stareUP)
         ; check DOWN state
-        (Teren T1 pozitia ?DOWN_rowAttack&:(eq ?DOWN_rowAttack (+ ?rowAttacked 1)) ?DOWN_colAttack&:(eq ?DOWN_colAttack ?colAttacked) este $? ?stareDOWN&:(neq ?stareDOWN atacata))
+        (Teren T1 pozitia ?DOWN_rowAttack&:(eq ?DOWN_rowAttack (+ ?rowAttacked 1)) ?DOWN_colAttack&:(eq ?DOWN_colAttack ?colAttacked) este $? ?stareDOWN)
         ; check LEFT state
-        (Teren T1 pozitia ?LEFT_rowAttack&:(eq ?LEFT_rowAttack ?rowAttacked) ?LEFT_colAttack&:(eq ?LEFT_colAttack (- ?colAttacked 1)) este $? ?stareLEFT&:(neq ?stareLEFT atacata))
+        (Teren T1 pozitia ?LEFT_rowAttack&:(eq ?LEFT_rowAttack ?rowAttacked) ?LEFT_colAttack&:(eq ?LEFT_colAttack (- ?colAttacked 1)) este $? ?stareLEFT)
         ; check RIGHT state
-        (Teren T1 pozitia ?RIGHT_rowAttack&:(eq ?RIGHT_rowAttack ?rowAttacked) ?RIGHT_colAttack&:(eq ?RIGHT_colAttack (+ ?colAttacked 1)) este $? ?stareRIGHT&:(neq ?stareRIGHT atacata))
+        (Teren T1 pozitia ?RIGHT_rowAttack&:(eq ?RIGHT_rowAttack ?rowAttacked) ?RIGHT_colAttack&:(eq ?RIGHT_colAttack (+ ?colAttacked 1)) este $? ?stareRIGHT)
     )
+
+    ; exclude this rule if a navy has 2 hits and let LineSearch to do his work
+    (Teren T1 pozitia ?row ?col este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
+    (not (test (or (neq ?row ?rowAttacked) (neq  ?col ?colAttacked))))
+    
 
     ; TODO: add a way to check for edges
     ; 
@@ -134,15 +139,11 @@
     ; Problem now is that this rule is filtering too much, edges fail at the (and ..) above
 
     =>    
-
-    ; TODO: can check if are also not others planned attack for same position
-    ;
-
     ; check for frontier edges - WARNING: it is not feasible with a 1x1 or 2x2 terrain
-    (bind ?is_UP_Approachable    (neq ?rowAttacked 1))
-    (bind ?is_DOWN_Approachable  (neq ?rowAttacked ?*nr_linii*))
-    (bind ?is_LEFT_Approachable  (neq ?colAttacked 1))
-    (bind ?is_RIGHT_Approachable (neq ?colAttacked ?*nr_coloane*))
+    (bind ?is_UP_Approachable    (and (neq ?rowAttacked 1) (neq ?stareUP atacata)))
+    (bind ?is_DOWN_Approachable  (and (neq ?rowAttacked ?*nr_linii*) (neq ?stareDOWN atacata)))
+    (bind ?is_LEFT_Approachable  (and (neq ?colAttacked 1) (neq ?stareLEFT atacata)))
+    (bind ?is_RIGHT_Approachable (and (neq ?colAttacked ?*nr_coloane*) (neq ?stareRIGHT atacata)))
 
     (bind ?rowToAttack -1)
     (bind ?colToAttack -1)
@@ -155,7 +156,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?UP_rowAttack) 
             (bind ?colToAttack ?UP_colAttack)
-            (printout t "UP" crlf)
+            ;(printout t "UP:"?stareUP crlf)
         )
 
         ; update attack zone if DOWN is unattacked
@@ -163,7 +164,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?DOWN_rowAttack) 
             (bind ?colToAttack ?DOWN_colAttack)
-            (printout t "DOWN" crlf)
+            ;(printout t "DOWN:"?stareDOWN crlf)
         )
 
         ; update attack zone if LEFT is unattacked
@@ -171,7 +172,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?LEFT_rowAttack) 
             (bind ?colToAttack ?LEFT_colAttack)
-            (printout t "LEFT" crlf)
+            ;(printout t "LEFT:"?stareLEFT crlf)
         )
 
         ; update attack zone if RIGHT is unattacked
@@ -179,7 +180,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?RIGHT_rowAttack) 
             (bind ?colToAttack ?RIGHT_colAttack)
-            (printout t "RIGHT" crlf)
+            ;(printout t "RIGHT:"?stareRIGHT crlf)
         )
     )
 
