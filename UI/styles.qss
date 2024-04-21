@@ -1,0 +1,141 @@
+
+/**********************   ModuleWidgets   ***********************/
+
+
+
+/**********************   TerrainWidgets   ***********************/
+TerrainWidget QPushButton#seaPosition
+{
+    border: 1px solid #57ceff;
+    background: #88dcff
+}
+
+UserTerrainWidget QLabel#userLabel,
+EnemyTerrainWidget QLabel#enemyLabel
+ {
+    font-size: 24px; 
+    font-weight: bold; 
+    font-style: italic; 
+    color: #333; 
+    text-align: center;
+    padding: 5px 0; 
+}
+
+
+UserTerrainWidget QPushButton#placeNavyTier1,
+UserTerrainWidget QPushButton#placeNavyTier2,
+UserTerrainWidget QPushButton#placeNavyTier3,
+UserTerrainWidget QPushButton#placeNavyTier4 
+{
+    border: 2px solid #044553;
+    font-weight: bold; 
+    font-size: 20;
+    padding: 5px;
+}
+UserTerrainWidget QPushButton#placeNavyTier1 {background-color: #02ccb2;}
+UserTerrainWidget QPushButton#placeNavyTier1:hover { background-color: #00a999; }
+UserTerrainWidget QPushButton#placeNavyTier1:pressed { background-color: #018e78; }
+UserTerrainWidget QPushButton#placeNavyTier1:disabled { background-color: #c7c7c7; }
+
+UserTerrainWidget QPushButton#placeNavyTier2 {background-color: #fdb61c;}
+UserTerrainWidget QPushButton#placeNavyTier2:hover { background-color: #e29c00; }
+UserTerrainWidget QPushButton#placeNavyTier2:pressed { background-color: #cc8400; }
+UserTerrainWidget QPushButton#placeNavyTier2:disabled { background-color: #c7c7c7; }
+
+UserTerrainWidget QPushButton#placeNavyTier3 {background-color: #fd642b;}
+UserTerrainWidget QPushButton#placeNavyTier3:hover { background-color: #e64200; }
+UserTerrainWidget QPushButton#placeNavyTier3:pressed { background-color: #cc5d00; }
+UserTerrainWidget QPushButton#placeNavyTier3:disabled { background-color: #c7c7c7; }
+
+UserTerrainWidget QPushButton#placeNavyTier4 {background-color: #8847c9;}
+UserTerrainWidget QPushButton#placeNavyTier4:hover { background-color: #6b38a3; }
+UserTerrainWidget QPushButton#placeNavyTier4:pressed { background-color: #572f8b; }
+UserTerrainWidget QPushButton#placeNavyTier4:disabled { background-color: #c7c7c7; }
+
+
+EnemyTerrainWidget QPushButton#bombButton,
+EnemyTerrainWidget QPushButton#scanButton,
+EnemyTerrainWidget QPushButton#lineAssaultButton {
+    border: 2px solid #044553;
+    font-weight: bold; 
+    font-size: 20;
+    padding: 5px;
+}
+
+EnemyTerrainWidget QPushButton#bombButton:hover,
+EnemyTerrainWidget QPushButton#scanButton:hover,
+EnemyTerrainWidget QPushButton#lineAssaultButton:hover {
+    background-color: #85929E; /* Lighter gray background on hover */
+}
+
+EnemyTerrainWidget QPushButton#bombButton:pressed,
+EnemyTerrainWidget QPushButton#scanButton:pressed,
+EnemyTerrainWidget QPushButton#lineAssaultButton:pressed {
+    background-color: #34495E; /* Darker gray background when pressed */
+    border-color: #FFF; /* White border color when pressed */
+}
+
+
+
+/**********************   START SCENE   ***********************/
+BattleshipUI QWidget{
+    background-color: #RRGGBB;
+}
+
+StartGameWidget QLabel {
+    color: #333; /* Dark gray text color */
+}
+
+StartGameWidget QLineEdit, StartGameWidget QComboBox {
+    background-color: #e0f3e0; /* Light greenish background */
+    border: 2px solid #4c944c; /* Dark green border */
+    border-radius: 5px;
+}
+StartGameWidget QComboBox::item {
+    font: 14px "Arial"; /* Set the font family and size */
+    color: #333; /* Set the text color */
+}
+
+StartGameWidget QPushButton {
+    background-color: #5ab85a; /* Dark green button */
+    color: #ffffff; /* White text color */
+    border: 2px solid #333; /* Black border */
+    border-radius: 5px;
+    padding: 8px 20px; /* Padding around the button text */
+}
+
+StartGameWidget QPushButton:hover {
+    background-color: #439f43; /* Darker green button on hover */
+}
+
+
+
+/**********************   END SCENE   ***********************/
+EndGameWidget QWidget#EndGameWidget {
+    background-color: #f0f0f0; /* Light gray background */
+}
+
+EndGameWidget QLabel#winResult, 
+EndGameWidget QLabel#loseResult
+{
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    qproperty-alignment: AlignCenter;
+}
+
+EndGameWidget QLabel#winResult { color: green; }
+EndGameWidget QLabel#loseResult { color: red; }
+
+EndGameWidget QPushButton#restartButton {
+    background-color: #007bff; /* Blue button */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+EndGameWidget QPushButton#restartButton:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
