@@ -9,7 +9,7 @@ Created on Fri Apr 19 11:14:16 2024
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, Qt
 
 # LOCAL WIDGETS
 from UI.ModuleWidgets import StartGameWidget, EndGameWidget
@@ -34,6 +34,8 @@ class GamePlayWidget(QWidget):
         terrain_layout = QHBoxLayout(terrain_widget)
         terrain_layout.addWidget(self.user_widget)
         terrain_layout.addWidget(self.enemy_widget)
+        terrain_layout.setAlignment(self.user_widget, Qt.AlignCenter)
+        terrain_layout.setAlignment(self.enemy_widget, Qt.AlignCenter)
         layout.addWidget(terrain_widget)
         layout.addWidget(self.info_widget)
         # notify user that game is ready to continue
@@ -41,6 +43,10 @@ class GamePlayWidget(QWidget):
         print("GamePlayWidget created...")
         self.message_area_widget.add_message("Welcome to the game")
 
+        self.user_widget.addMessageToConsole.connect(self.addMessage)
+    
+    def addMessage(self, message):
+        self.message_area_widget.add_message(message)
 
 class BattleshipUI(QMainWindow):
     def __init__(self):
@@ -59,7 +65,7 @@ class BattleshipUI(QMainWindow):
         screen_geometry = QCoreApplication.instance().desktop().screenGeometry()
         center_x = screen_geometry.width() // 2 - self.width() // 2
         center_y = screen_geometry.height() // 2 - self.height() // 1.8
-        self.move(center_x, center_y)
+        self.move(int(center_x), int(center_y))
 
     def launch_game(self):
         self.scene_start = StartGameWidget()
