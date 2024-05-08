@@ -1,4 +1,4 @@
-(deffacts Ex1
+(deffacts BattleshipGame
 
     ;(Teren <ID_Teren> poziția <rând> <coloana> este <stare>)
     ;(Teren <ID_Teren> poziția <rând> <coloana> este ocupată de nava <ID_Navă> si este <stare_poziție_navă>)
@@ -41,6 +41,7 @@
 	?*y0* = 0
 	?*y1* = 0
 	?*hit* = 0 ;folosit pentru a opri atacurile random de pe frontiera atunci cand a fost lovita o nava
+    ?*isDebugging* = 0 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
 )
 
 
@@ -111,7 +112,7 @@
     ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
     (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ?nava si este neatacata)
     =>
-    (printout t "Exista o nava in zona scanata" crlf)
+    (if (eq ?*isDebugging* 1) then (printout t "Exista o nava in zona scanata" crlf))
     (retract ?atac)
 	(assert (calcul_frontiera ?rand_de_verificat ?coloana_de_verificat))
 )
@@ -120,7 +121,7 @@
     ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
     (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
     =>
-    (printout t "Exista o nava in zona scanata" crlf)
+    (if (eq ?*isDebugging* 1) then (printout t "Exista o nava in zona scanata" crlf))
     (retract ?atac)
 )
 
@@ -224,7 +225,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?UP_rowAttack) 
             (bind ?colToAttack ?UP_colAttack)
-            ;(printout t "UP:"?stareUP crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "UP:"?stareUP crlf))
         )
 
         ; update attack zone if DOWN is unattacked
@@ -232,7 +233,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?DOWN_rowAttack) 
             (bind ?colToAttack ?DOWN_colAttack)
-            ;(printout t "DOWN:"?stareDOWN crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "DOWN:"?stareDOWN crlf))
         )
 
         ; update attack zone if LEFT is unattacked
@@ -240,7 +241,7 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?LEFT_rowAttack) 
             (bind ?colToAttack ?LEFT_colAttack)
-            ;(printout t "LEFT:"?stareLEFT crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "LEFT:"?stareLEFT crlf))
         )
 
         ; update attack zone if RIGHT is unattacked
@@ -248,16 +249,16 @@
             (bind ?rand (- ?rand 1)) 
             (bind ?rowToAttack ?RIGHT_rowAttack) 
             (bind ?colToAttack ?RIGHT_colAttack)
-            ;(printout t "RIGHT:"?stareRIGHT crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "RIGHT:"?stareRIGHT crlf))
         )
     )
 
     (if (and (neq ?rowToAttack -1) (neq ?colToAttack -1)) then
         (assert (Sistem ataca pozitia ?rowToAttack ?colToAttack din terenul T1 cu B))
-        (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf)
+        (if (eq ?*isDebugging* 1) then  (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf))
     else
-        (printout t "[WARNING] Pozitii invalide gasite de met. CruceSearch" crlf)
-        (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf)
+        (if (eq ?*isDebugging* 1) then (printout t "[WARNING] Pozitii invalide gasite de met. CruceSearch" crlf))
+        (if (eq ?*isDebugging* 1) then (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf))
     )
 )
 
@@ -275,8 +276,8 @@
         (if (or (and (eq ?rowHitIntern ?rowHit1) (eq ?colHitIntern ?colHit1)) (and (eq ?rowHitIntern ?rowHit2) (eq ?colHitIntern ?colHit2))) then
             (or 
                 ; TODO: find a way to better check for 2 hits ships, without duplicating the rule activation or redirect ships w/ 2hits to +3 ships method
-                (and (eq ?rowHit1 ?rowHit2) (> ?colHit1 ?colHit2) (eq ?rowHitIntern ?rowHit1) (neq ?rowHitIntern ?rowHit2) (printout t "Same row = 2 hits" crlf) ) ; same row
-                (and (eq ?colHit1 ?colHit2) (> ?rowHit1 ?rowHit2) (eq ?colHitIntern ?colHit1) (neq ?colHitIntern ?colHit2) (printout t "Same col = 2 hits" crlf) ) ; same col
+                (and (eq ?rowHit1 ?rowHit2) (> ?colHit1 ?colHit2) (eq ?rowHitIntern ?rowHit1) (neq ?rowHitIntern ?rowHit2) (if (eq ?*isDebugging* 1) then  (printout t "Same row = 2 hits" crlf) )) ; same row
+                (and (eq ?colHit1 ?colHit2) (> ?rowHit1 ?rowHit2) (eq ?colHitIntern ?colHit1) (neq ?colHitIntern ?colHit2) (if (eq ?*isDebugging* 1) then (printout t "Same col = 2 hits" crlf) )) ; same col
             )               
         else
             (or
@@ -319,12 +320,12 @@
 
         (if (and (eq ?rand 1) ?is_LEFT_Approachable) then 
             (bind ?colToAttack (- (min ?colHit1 ?colHit2) 1))
-            (printout t "LEFT" crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "LEFT" crlf))
         )
 
         (if (and (neq ?rand 1) ?is_RIGHT_Approachable) then 
             (bind ?colToAttack (+ (max ?colHit1 ?colHit2) 1))
-            (printout t "RIGHT" crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "RIGHT" crlf))
         )
     ) 
 
@@ -335,21 +336,21 @@
 
         (if (and (eq ?rand 1) ?is_UP_Approachable) then
             (bind ?rowToAttack (- (min ?rowHit1 ?rowHit2) 1))
-            (printout t "UP" crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "UP" crlf))
         )
 
         (if (and (neq ?rand 1) ?is_DOWN_Approachable) then
             (bind ?rowToAttack (+ (max ?rowHit1 ?rowHit2) 1))
-            (printout t "DOWN" crlf)
+            (if (eq ?*isDebugging* 1) then (printout t "DOWN" crlf))
         )
     )
 
     (if (and (neq ?rowToAttack -1) (neq ?colToAttack -1)) then
         (assert (Sistem ataca pozitia ?rowToAttack ?colToAttack din terenul T1 cu B))
-        (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf)
+        (if (eq ?*isDebugging* 1) then (printout t "[PLANNING] S-a planificat un atac in T1 pe pozX:" ?rowToAttack ", pozY:" ?colToAttack crlf))
     else
-        (printout t "[WARNING] Pozitii invalide gasite de met. LineSearch" crlf)
-        (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf)
+        (if (eq ?*isDebugging* 1) then (printout t "[WARNING] Pozitii invalide gasite de met. LineSearch" crlf))
+        (if (eq ?*isDebugging* 1) then (printout t "[WARNING] Nava " ?id_nava " ar putea fi deja distrusa!!" crlf))
     )
 )
 
@@ -360,7 +361,7 @@
     =>
     (retract ?idx)
     (assert (Nava ?id este distrusa))
-    (printout t "Nava " ?id " a fost declarata distrusa!" crlf)
+    (if (eq ?*isDebugging* 1) then (printout t "Nava " ?id " a fost declarata distrusa!" crlf))
 )
 
 
@@ -370,7 +371,7 @@
     => 
 	(close)
 	(open map_start.txt map_start "r")
-	(printout t "Faptele au fost actualizare dupa harta" crlf)
+	(if (eq ?*isDebugging* 1) then (printout t "Faptele au fost actualizare dupa harta" crlf))
 )
 
 
@@ -378,7 +379,7 @@
 	(declare (salience 98))
 	=>
 	(close map_start)
-	(printout t "Fisierele au fost inchise" crlf)
+	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
 )
 
 
@@ -411,14 +412,14 @@
 	(declare (salience 97))
     =>
 	(open map_parcurs.txt map_parcurs "w")
-	(printout t "Putem scrie in map.txt" crlf)
+	(if (eq ?*isDebugging* 1) then (printout t "Putem scrie in map.txt" crlf))
 )
 
 (defrule Rule_Closing_File_Write
 	(declare (salience 95))
 	=>
 	(close map_parcurs)
-	(printout t "Fisierele au fost inchise" crlf)
+	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
 )
 
 
@@ -434,7 +435,7 @@
 	(if (<= ?row ?*nr_linii*)
 		then 
 			(printout map_parcurs ?check " " )
-			(printout t  ?row ?col ?check crlf)
+			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
 			
 			(if (< ?col ?*nr_coloane*)
 				then
@@ -443,7 +444,7 @@
 					(retract ?Delete2)
 	;				(assert (rule_writing_in_map 2))
 				else
-					(printout t  "else" crlf)
+					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
 					(retract ?Delete2)
 					(if (< ?row ?*nr_linii*)
 						then
@@ -460,7 +461,7 @@
 
 	)
 		
-	(printout t " am actualizat o pozitie" crlf)
+	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
 )
 
 
