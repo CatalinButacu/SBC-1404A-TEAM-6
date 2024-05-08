@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 19 16:15:36 2024
 
-@author: Catalin.BUTACU
+@authors: Catalin.BUTACU, Serban.VICOL, Nicu.TARADACIUC
 """
 
 import sys

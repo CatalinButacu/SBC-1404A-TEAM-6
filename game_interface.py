@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 19 11:14:16 2024
 
-@author: Catalin.BUTACU
+@authors: Catalin.BUTACU, Serban.VICOL, Nicu.TARADACIUC
 """
 
 # LIBS DEPENDENCIES

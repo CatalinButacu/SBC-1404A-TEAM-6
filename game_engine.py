@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 19 10:25:34 2024
 
-@author: Catalin.BUTACU
+@authors: Catalin.BUTACU, Serban.VICOL, Nicu.TARADACIUC
 """
 
 # LIBS
