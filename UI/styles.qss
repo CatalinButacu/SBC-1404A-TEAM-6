@@ -9,6 +9,12 @@ TerrainWidget QPushButton#seaPosition
     border: 1px solid #57ceff;
     background: #88dcff
 }
+TerrainWidget QPushButton#seaPosition:disabled
+{
+    border: 1px solid #57ceff;
+    background: #b3e7fc
+}
+
 
 UserTerrainWidget QLabel#userLabel,
 EnemyTerrainWidget QLabel#enemyLabel
