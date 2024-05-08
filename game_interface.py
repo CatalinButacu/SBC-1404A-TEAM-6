@@ -7,46 +7,11 @@ Created on Fri Apr 19 11:14:16 2024
 
 # LIBS DEPENDENCIES
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
-from PyQt5.QtCore import QCoreApplication, Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtCore import QCoreApplication
 
 # LOCAL WIDGETS
-from UI.ModuleWidgets import StartGameWidget, EndGameWidget
-from UI.GameWidgets import UserTerrainWidget, EnemyTerrainWidget
-from UI.ComunicationWidgets import ScrollableMessageBox, InfoWidget
-
-
-class GamePlayWidget(QWidget):
-    def __init__(self):
-        # init game widgets
-        super().__init__()
-        print("BattleshipUI created...")
-        self.user_widget = UserTerrainWidget()
-        self.enemy_widget = EnemyTerrainWidget()
-        self.message_area_widget = ScrollableMessageBox()
-        self.info_widget = InfoWidget()
-        
-        # init layouts
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.message_area_widget)
-        terrain_widget = QWidget()
-        terrain_layout = QHBoxLayout(terrain_widget)
-        terrain_layout.addWidget(self.user_widget)
-        terrain_layout.addWidget(self.enemy_widget)
-        terrain_layout.setAlignment(self.user_widget, Qt.AlignCenter)
-        terrain_layout.setAlignment(self.enemy_widget, Qt.AlignCenter)
-        layout.addWidget(terrain_widget)
-        layout.addWidget(self.info_widget)
-        # notify user that game is ready to continue
-        
-        print("GamePlayWidget created...")
-        self.message_area_widget.add_message("Welcome to the game")
-
-        self.user_widget.addMessageToConsole.connect(self.addMessage)
-    
-    def addMessage(self, message):
-        self.message_area_widget.add_message(message)
+from UI.ModuleWidgets import StartGameWidget, GamePlayWidget, EndGameWidget
 
 class BattleshipUI(QMainWindow):
     def __init__(self):
@@ -54,12 +19,12 @@ class BattleshipUI(QMainWindow):
         print("BattleshipUI created...")
         self.setWindowTitle("Battleship Game SBC")
         self.setFixedSize(1000, 820)
-        self.center_window() 
+        self.center_window()
         self.scene_start = None
         self.scene_play = None
         self.scene_stop = None
         #self.end_game("lose")
-        self.launch_game() 
+        self.launch_game()
 
     def center_window(self):
         screen_geometry = QCoreApplication.instance().desktop().screenGeometry()
@@ -106,12 +71,11 @@ def load_styles_from_file(root, file_path):
 def main():
     app = QApplication(sys.argv)
     load_styles_from_file(app, "UI/styles.qss")
-    
+
     game_ui = BattleshipUI()
     game_ui.show()
-    
+
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()
-    

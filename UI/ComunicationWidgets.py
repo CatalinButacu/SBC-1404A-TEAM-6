@@ -30,7 +30,7 @@ class ScrollableMessageBox(QWidget):
         # Timer for displaying messages from the queue
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.display_next_message)
-        
+
         self.load_styles_from_file("UI/styles.qss")
 
     def load_styles_from_file(self, file_path):
@@ -76,7 +76,7 @@ class InfoWidget(QWidget):
             2: "<Some hints for level 2/>",  # see only navy remained
             3: "<Some hints for level 3/>"   # i think at no hints at all
         }
-        
+
         self.info_layout = QVBoxLayout()
 
         self.info_label = QLabel("Game Information")
@@ -112,7 +112,6 @@ class InfoWidget(QWidget):
         self.status_label.setText(status_text)
 
 
-
 def test_scrollarea():
     app = QApplication(sys.argv)
     window = ScrollableMessageBox()
@@ -132,36 +131,3 @@ def test_infoarea():
 if __name__ == '__main__':
     #test_infoarea()
     test_scrollarea()
-
-
-# ### RETAIN ALL DATA IN SAME PIN SPACE
-# class Singleton(type):
-#     _instances = {}
-
-#     def __call__(cls, *args, **kwargs):
-#         if cls not in cls._instances:
-#             cls._instances[cls] = super().__call__(*args, **kwargs)
-#         return cls._instances[cls]
-
-# class InitDataApp(metaclass=Singleton):
-#     _instances = {}
-
-#     def __init__(self):
-#         self.user_name = "Guest"
-#         self.difficulty = 1
-
-#     @classmethod
-#     def getUserName(cls):
-#         return cls._instances[cls].user_name
-
-#     @classmethod
-#     def getUserDifficulty(cls):
-#         return cls._instances[cls].difficulty
-    
-#     @classmethod
-#     def setUserName(cls, name):
-#         cls._instances[cls].user_name = name
-    
-#     @classmethod
-#     def setUserDifficulty(cls, lv):
-#         cls._instances[cls].difficulty = lv

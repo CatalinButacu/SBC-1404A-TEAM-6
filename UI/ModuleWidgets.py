@@ -5,9 +5,14 @@ Created on Fri Apr 19 22:48:51 2024
 @authors: Catalin.BUTACU, Serban.VICOL, Nicu.TARADACIUC
 """
 
+# LIBS
 import sys
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit, QDesktopWidget
-from PyQt5.QtCore import pyqtSignal
+
+# LOCAL WIDGETS
+from UI.ComunicationWidgets import ScrollableMessageBox, InfoWidget
+from UI.GameWidgets import UserTerrainWidget, EnemyTerrainWidget
 
 
 ### STARTS SCENE
@@ -54,7 +59,7 @@ class StartGameWidget(QWidget):
 
         main_layout.addLayout(interesting_area_layout, 4)
         main_layout.addStretch(3)
-        
+
         self.setLayout(main_layout)
 
     def center_window(self):
@@ -76,6 +81,39 @@ class StartGameWidget(QWidget):
     def on_start_clicked(self):
         self.signal_start_game.emit(True)
         print("Client just initiated a new sesion game")
+
+
+### GAME SCENE
+class GamePlayWidget(QWidget):
+    def __init__(self):
+        # init game widgets
+        super().__init__()
+        print("BattleshipUI created...")
+        self.user_widget = UserTerrainWidget()
+        self.enemy_widget = EnemyTerrainWidget()
+        self.message_area_widget = ScrollableMessageBox()
+        self.info_widget = InfoWidget()
+
+        # init layouts
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.message_area_widget)
+        terrain_widget = QWidget()
+        terrain_layout = QHBoxLayout(terrain_widget)
+        terrain_layout.addWidget(self.user_widget)
+        terrain_layout.addWidget(self.enemy_widget)
+        terrain_layout.setAlignment(self.user_widget, Qt.AlignCenter)
+        terrain_layout.setAlignment(self.enemy_widget, Qt.AlignCenter)
+        layout.addWidget(terrain_widget)
+        layout.addWidget(self.info_widget)
+        # notify user that game is ready to continue
+
+        print("GamePlayWidget created...")
+        self.message_area_widget.add_message("Welcome to the game")
+
+        self.user_widget.addMessageToConsole.connect(self.addMessage)
+
+    def addMessage(self, message):
+        self.message_area_widget.add_message(message)
 
 
 ### END SCENE

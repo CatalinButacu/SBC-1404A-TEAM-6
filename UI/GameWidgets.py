@@ -8,165 +8,9 @@ Created on Fri Apr 19 16:15:36 2024
 import sys
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QLabel, QPushButton, QGridLayout, QHBoxLayout
-from PyQt5.QtGui import QPixmap, QIcon, QCursor, QColor, QPalette
-
-
-### UI ELEMENTS
-
-"""
-    CountedButton - UI Element
-    > informing user about remained ship available to place on the map
-    > change mouse icon with ship selected click
-    > emit signal to inform other widgets about selected ship
-
-"""
-class ShipPlacementButton(QPushButton):
-    signal_ship_selected = pyqtSignal(int, bool)
-
-    def __init__(self, tier, count, parent=None):
-        super().__init__(parent)
-        self._count = count
-        self.ship = Ship(tier)
-        self.update_text_button()
-        self.cursor_pixmap = QPixmap(self.ship.image_path)
-        width, height = self.ship.get_size_px()
-        self.cursor_pixmap = self.cursor_pixmap.scaled(width, height)
-
-    def decrease_count(self):
-        if self._count > 0:
-            self._count -= 1
-            self.update_text_button()
-
-    def update_text_button(self):
-        new_state = self._count > 0
-        if self.isEnabled() != new_state:
-            self.setEnabled(new_state)
-        new_text = f"{self.ship.name} ({self._count})"
-        if self.text() != new_text:
-            self.setText(new_text)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            width, height = 40, 40 # self.ship.get_size_px()
-            self.parent().setCursor(QCursor(self.cursor_pixmap, width // 2, height // 2))
-            self.signal_ship_selected.emit(self.ship.size, self.ship.orientation)
-
-    def getCount(self):
-        return self._count
-
-
-class AbilityPlacementButtons(QPushButton):
-    signal_ability_selected = pyqtSignal(int)
-
-    def __init__(self, tier, count, parent=None):
-        super().__init__(parent)
-        self._count = count
-        self.ability = Ability(tier)
-        self.update_text_button()
-        self.cursor_pixmap = QPixmap(self.ability.image_path)
-        self.cursor_pixmap = self.cursor_pixmap.scaled(40, 40) if self.ability.id > 2 else self.cursor_pixmap.scaled(30, 30)
-
-    def decrease_count(self):
-        if self._count > 0:
-            self._count -= 1
-            self.update_text_button()
-
-    def update_text_button(self):
-        new_state = self._count > 0
-        if self.isEnabled() != new_state:
-            self.setEnabled(new_state)
-        new_text = f"{self.ability.name} ({self._count})" if self._count<10 else f"{self.ability.name} (∞)"
-        if self.text() != new_text:
-            self.setText(new_text)
-
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            width, height = 40, 40
-            if self.ability.id < 3:
-                width, height = 30, 30
-            self.parent().setCursor(QCursor(self.cursor_pixmap, width // 2, height // 2))
-            self.signal_ability_selected.emit(self.ability.id)
-
-    def getCount(self):
-        return self._count
-
-### SOME DICTIONARIES FOR THE CLASSES
-SHIP_NAME = {
-    1:"Corvete",
-    2:"Canoniere",
-    3:"Fregate",
-    4:"Distrugatoare",
-}
-PATH_V = {
-    1:"Resources\components\V-Monitoare.png",
-    2:"Resources\components\V-Canoniera.png",
-    3:"Resources\components\V-Fregate.png",
-    4:"Resources\components\V-Distroyer.png",
-}
-PATH_H = {
-    1:"Resources\components\H-Monitoare.png",
-    2:"Resources\components\H-Canoniera.png",
-    3:"Resources\components\H-Fregate.png",
-    4:"Resources\components\H-Distroyer.png",
-}
-
-ABILITY_NAME = {
-    1:"Bomb",
-    2:"Scan",
-    3:"Line Assault",
-}
-PATH_ABILITY = {
-    1:"Resources\components\TARGET.png",
-    2:"Resources\components\SCAN.png",
-    3:"Resources\components\ASSAULT.png",
-}
-
-"""
-    Ship
-    > just let us keep more info about type of ship in interactions
-
-"""
-class Ship:
-    HORIZONTAL = 0
-    VERTICAL = 1
-
-    def __init__(self, size, orientation=HORIZONTAL):
-        self.size = size
-        self.orientation = orientation
-        self.refX = -1
-        self.refY = -1
-        self.name = SHIP_NAME.get(size,'Not a ship')
-        self.image_path = PATH_H.get(size,'Not a ship') if self.orientation == self.HORIZONTAL else PATH_V.get(size,'Not a ship')
-
-    def rotate(self):
-        self.orientation = self.VERTICAL if self.orientation == self.HORIZONTAL else self.HORIZONTAL
-        self.image_path = PATH_H.get(self.size,'Not a ship') if self.orientation == self.HORIZONTAL else PATH_V.get(self.size,'Not a ship')
-
-    def setRefPos(self, x, y):
-        self.refX = x
-        self.refY = y
-
-    def get_size_px(self):
-        size_px = (self.size * 40, 40)
-        return size_px if self.orientation == self.HORIZONTAL else size_px[::-1]
-
-"""
-    Ability
-    > just let us keep more info about type of ability that user could interact with
-
-"""
-class Ability:
-    def __init__(self, id_ability):
-        self.id = id_ability
-        self.refX = -1
-        self.refY = -1
-        self.name = ABILITY_NAME.get(id_ability,'No ability selected')
-        self.image_path = PATH_ABILITY.get(id_ability,'No ability selected')
-
-    def setRefPos(self, x, y):
-        self.refX = x
-        self.refY = y
-
+from PyQt5.QtGui import QPixmap, QIcon, QCursor
+from UI.DataController import *
+from UI.UI_Elements import ShipPlacementButton, AbilityPlacementButtons
 
 
 ### TERRAIN CLASSES
@@ -320,7 +164,7 @@ class TerrainWidget(QWidget):
             self.parentWidget().setCursor(Qt.ArrowCursor)
 
         if count == 0:
-            self.parentWidget().self.addMessageToConsole.emit(f"All ships of tier {ship.size} have been placed.")
+            self.parentWidget().addMessageToConsole.emit(f"All ships of tier {ship.size} have been placed.")
             return False
 
         # check for not covering other ships already placed
@@ -334,7 +178,7 @@ class TerrainWidget(QWidget):
                 return False
             for i in range(size):
                 if self.buttons[row][col + i].property("isShipPlaced") == "yes" :
-                    self.parentWidget().self.addMessageToConsole.emit(f"Collision with other ship at {row},{col+i}")
+                    self.parentWidget().addMessageToConsole.emit(f"Collision with other ship at {row},{col+i}")
                     return False
         else:
             if row + size - 1 >= self.squares:
