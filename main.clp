@@ -354,6 +354,7 @@
     )
 )
 
+;;; AUTOMATIONS
 (defrule DeclareShipDistroyed "Invalidate a ship -> declare as a distroyed"
     (declare (salience 50))
     ?idx <- (Nava ?id nu este distrusa)
@@ -364,7 +365,23 @@
     (if (eq ?*isDebugging* 1) then (printout t "Nava " ?id " a fost declarata distrusa!" crlf))
 )
 
+(defrule FreezeStateSistem "Prepare terrain for the new state comutation that will be inserted"
+    (declare (salience 500))
+    ?idx_freeze <- (freeze_state_sistem)
+    ?idx_state <- (Sistem ?)
+    =>
+    (retract ?idx_freeze ?idx_state)
+)
 
+(defrule Update_Map_Command "daca dai (assert (update_map_now)) se va face automat o rescrie completa a hartei cu variabilele actuale"
+	(declare (salience 96))
+	?Delete1 <-(update_map_now)
+	?Delete2 <-(update_map No)
+	=>
+	(assert (update_map Yes))
+	(retract ?Delete1)
+	(retract ?Delete2)
+)
 ;;; FILES OPERATIONS
 (defrule Rule_Opening_File_Read
 	(declare (salience 100))
@@ -466,12 +483,3 @@
 
 
 
-(defrule Update_Map_Command   ; daca dai (assert (update_map_now)) se va face automat o rescrie completa a hartei cu variabilele actuale
-	(declare (salience 96))
-	?Delete1 <-(update_map_now)
-	?Delete2 <-(update_map No)
-	=>
-	(assert (update_map Yes))
-	(retract ?Delete1)
-	(retract ?Delete2)
-)
