@@ -26,7 +26,9 @@
     (Nava verticala N3 coloana 1 pe randurile 3 4) 
 
     (global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
-    (update_map Yes) ; foosit pt actualizarea hartii
+    (update_map Yes) ; folosit pt actualizarea hartii
+	(dificultate 3)  ;folosit pentru calculul frontierei
+	
 )
 
 
@@ -34,26 +36,33 @@
     ?*nr_linii* = 4
     ?*nr_coloane* = 4
     ?*coloana_atac_linie* = 1
+	?*x0* = 0
+	?*x1* = 0
+	?*y0* = 0
+	?*y1* = 0
+	?*hit* = 0 ;folosit pentru a opri atacurile random de pe frontiera atunci cand a fost lovita o nava
 )
 
 
 ;;; UPDATE RULES
-(defrule Actualizare_Teren_atacat_B (declare (salience 1))
-    (or
-        ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-        ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-    )
+(defrule Actualizare_Teren_atacat_B_jucator (declare (salience 1))
+    ?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
     ?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
     =>
     (retract ?atac ?status_teren)
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 )
 
-(defrule Actualizare_Nava_atacata_B (declare (salience 1))
-    (or
-        ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-        ?atac <- (Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-    )
+(defrule Actualizare_Teren_atacat_B_Sistem (declare (salience 1))
+    ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    ?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
+    =>
+    (retract ?atac ?status_teren)
+    (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
+)
+
+(defrule Actualizare_Nava_atacata_B_jucator (declare (salience 1))
+    ?atac <- (Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
     ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
     (Nava ?nava in terenul ?Teren)
     =>
@@ -61,6 +70,15 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 )
 
+(defrule Actualizare_Nava_atacata_B_Sistem (declare (salience 1))
+    ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+    (Nava ?nava in terenul ?Teren)
+    =>
+    (retract ?atac ?status_nava)
+    (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
+	(bind ?*hit* 1)
+)
 
 ;;; DIRECT ATTACK RULES
 (defrule Atac_linie_sistem (declare (salience 10))
@@ -91,10 +109,11 @@
 
 (defrule Atac_scanare_sistem (declare (salience 1))
     ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu S)
-    (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ? si este neatacata)
+    (Teren ?Teren pozitia ?rand_de_verificat&:(and (>= ?rand_de_verificat (- ?rand 1)) (<= ?rand_de_verificat (+ ?rand 1))) ?coloana_de_verificat&:(and (>= ?coloana_de_verificat (- ?coloana 1)) (<= ?coloana_de_verificat (+ ?coloana 1))) este ocupata de nava ?nava si este neatacata)
     =>
     (printout t "Exista o nava in zona scanata" crlf)
     (retract ?atac)
+	(assert (calcul_frontiera ?rand_de_verificat ?coloana_de_verificat))
 )
 
 (defrule Atac_scanare_jucator (declare (salience 1))
@@ -105,6 +124,55 @@
     (retract ?atac)
 )
 
+;;; FRONTIER CALCULATION 
+
+(defrule Calcul_frontiera (declare (salience 2))
+	?calcul <- (calcul_frontiera ?rand ?coloana)
+	(dificultate ?dificultate)
+	=>	
+	(if (< (- ?rand (- 4 ?dificultate)) 1) then
+	(bind ?*x0* 1)
+	else
+	(bind ?*x0* (- ?rand (- 4 ?dificultate)))
+	)
+	
+	(if (> (+ ?rand (- 4 ?dificultate)) ?*nr_linii*) then
+	(bind ?*x1* ?*nr_linii*)
+	else
+	(bind ?*x1* (+ ?rand (- 4 ?dificultate)))
+	)
+	
+	(if (< (- ?coloana (- 4 ?dificultate)) 1) then
+	(bind ?*y0* 1)
+	else
+	(bind ?*y0* (- ?coloana (- 4 ?dificultate)))
+	)
+	
+	(if (> (+ ?coloana (- 4 ?dificultate)) ?*nr_coloane*) then
+	(bind ?*y1* ?*nr_coloane*)
+	else
+	(bind ?*y1* (+ ?coloana (- 4 ?dificultate)))
+	)
+	
+	(assert (frontiera ?*x0* ?*y0* ?*x1* ?*y1*))
+	(retract ?calcul)
+	(bind ?*x0* 0)
+	(bind ?*x1* 0)
+	(bind ?*y0* 0)
+	(bind ?*y1* 0)
+	(bind ?*hit* 0)
+)
+
+;;; SYSTEM RANDOM ATTACK USING FRONTIER - WORK IN PROGRESS
+
+(defrule Sistem_ataca_frontiera (declare (salience 1))
+	(frontiera ?x0 ?y0 ?x1 ?y1)
+	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) $?)
+	=>
+	(if (eq ?*hit* 0) then
+		(assert (Sistem ataca pozitia ?rand ?coloana din terenul T1 cu B))
+	)
+)
 
 ;;; SEARCH ALGO RULES
 (defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
@@ -326,7 +394,7 @@
             (bind ?position_type (nth$ 1 ?each_line_explode))
             (if (and (neq ?position_type liber) (neq ?position_type atacata))
                 then
-                (assert (Teren T1 pozitia ?row_number ?col_number este ocupata de nava  ?position_type si este neatacata))
+                (assert (Teren T1 pozitia ?row_number ?col_number este ocupata de nava ?position_type si este neatacata))
             else
                 (assert (Teren T1 pozitia ?row_number ?col_number este ?position_type))
             )
