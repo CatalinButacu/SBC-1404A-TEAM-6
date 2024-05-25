@@ -33,8 +33,8 @@
 
 
 (defglobal
-    ?*nr_linii* = 4
-    ?*nr_coloane* = 4
+    ?*nr_linii* = 10
+    ?*nr_coloane* = 10
     ?*coloana_atac_linie* = 1
 	?*x0* = 0
 	?*x1* = 0
@@ -52,6 +52,7 @@
     =>
     (retract ?atac ?status_teren)
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
+	(assert (update_map_now))
 )
 
 (defrule Actualizare_Teren_atacat_B_Sistem (declare (salience 2))
@@ -60,6 +61,7 @@
     =>
     (retract ?atac ?status_teren)
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
+	(assert (update_map_now))
 )
 
 (defrule Actualizare_Nava_atacata_B_jucator (declare (salience 1))
@@ -69,6 +71,7 @@
     =>
     (retract ?atac ?status_nava)
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
+	(assert (update_map_now))
 )
 
 (defrule Actualizare_Nava_atacata_B_Sistem (declare (salience 2))
@@ -79,6 +82,7 @@
     (retract ?atac ?status_nava)
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 	(bind ?*hit* 1)
+	(assert (update_map_now))
 )
 
 ;;; DIRECT ATTACK RULES
@@ -430,31 +434,39 @@
 
 (defrule Rule_Opening_File_Write
 	(declare (salience 97))
+	(update_map Yes)
     =>
 	(open map_parcurs.txt map_parcurs "w")
+	
 	(if (eq ?*isDebugging* 1) then (printout t "Putem scrie in map.txt" crlf))
+	(assert (close_map_writing))
 )
 
 (defrule Rule_Closing_File_Write
 	(declare (salience 95))
+	(update_map No)
+	?Delete <-(close_map_writing)
 	=>
 	(close map_parcurs)
 	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
+	(retract ?Delete)
 )
 
 
 
-(defrule Rule_Writing_In_Map
+(defrule Rule_Writing_In_Map_Simple
     (declare (salience 96))
 	?Delete1 <-(update_map Yes)
 	?Delete2 <-(global_var ?row ?col)
-	(or (Teren T1 pozitia ?row ?col este ocupata de nava ?check si este ?atacat_sau_nu)
-		(Teren T1 pozitia ?row ?col este ?check)
-	)
+	(Teren T1 pozitia ?row ?col este ?check)
     =>
 	(if (<= ?row ?*nr_linii*)
 		then 
+
 			(printout map_parcurs ?check " " )
+			
+			
+			
 			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
 			
 			(if (< ?col ?*nr_coloane*)
@@ -484,5 +496,48 @@
 	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
 )
 
+(defrule Rule_Writing_In_Map_Ship
+    (declare (salience 96))
+	?Delete1 <-(update_map Yes)
+	?Delete2 <-(global_var ?row ?col)
+	(Teren T1 pozitia ?row ?col este ocupata de nava ?check si este ?atacat_sau_nu)
 
+    =>
+	(if (<= ?row ?*nr_linii*)
+		then 
+			(if (eq ?atacat_sau_nu atacata)
+				then
+					(printout map_parcurs (str-cat ?check "_a") " " )
+				else
+					(printout map_parcurs ?check " " )
+			)
+			
+			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
+			
+			(if (< ?col ?*nr_coloane*)
+				then
+					(assert (global_var ?row (+ ?col 1)))
+				;	(retract ?Delete1)
+					(retract ?Delete2)
+	;				(assert (rule_writing_in_map 2))
+				else
+					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
+					(retract ?Delete2)
+					(if (< ?row ?*nr_linii*)
+						then
+							(assert (global_var (+ ?row 1) 1))
+						else
+							(assert (global_var 1 1))
+							(assert (update_map No))
+							(retract ?Delete1)
+							(retract ?Delete2)
+					)
+						
+					(printout map_parcurs crlf)
+			)
+
+	)
+		
+	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
+)
 
