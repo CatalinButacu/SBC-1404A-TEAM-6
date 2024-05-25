@@ -54,7 +54,7 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 )
 
-(defrule Actualizare_Teren_atacat_B_Sistem (declare (salience 1))
+(defrule Actualizare_Teren_atacat_B_Sistem (declare (salience 2))
     ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
     ?status_teren<-(Teren ?Teren pozitia ?rand ?coloana este liber)
     =>
@@ -71,7 +71,7 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 )
 
-(defrule Actualizare_Nava_atacata_B_Sistem (declare (salience 1))
+(defrule Actualizare_Nava_atacata_B_Sistem (declare (salience 2))
     ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
     ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
     (Nava ?nava in terenul ?Teren)
@@ -127,7 +127,7 @@
 
 ;;; FRONTIER CALCULATION 
 
-(defrule Calcul_frontiera (declare (salience 2))
+(defrule Calcul_frontiera (declare (salience 3))
 	?calcul <- (calcul_frontiera ?rand ?coloana)
 	(dificultate ?dificultate)
 	=>	
@@ -168,13 +168,23 @@
 
 (defrule Sistem_ataca_frontiera (declare (salience 1))
 	(frontiera ?x0 ?y0 ?x1 ?y1)
-	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) $?)
+	(or
+	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este liber)
+	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este ocupata $?)
+	)
 	=>
 	(if (eq ?*hit* 0) then
 		(assert (Sistem ataca pozitia ?rand ?coloana din terenul T1 cu B))
 	)
 )
 
+(defrule Reset_hit (declare (salience -1))
+	=>
+	(if (eq ?*hit* 1) then
+		(bind ?*hit* 0)
+	)
+
+)
 ;;; SEARCH ALGO RULES
 (defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
     (declare (salience 20))
