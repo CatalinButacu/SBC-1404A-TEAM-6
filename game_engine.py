@@ -55,6 +55,39 @@ def print_all_facts():
     for fact in all_facts:
         print(fact)
 
+# READ / WRITE MAP
+def read_matrix_from_file(filename):
+    with open(filename, 'r') as file:
+        matrix = [line.strip().split() for line in file]
+    return matrix
+
+def print_positions_and_words(matrix):
+    for i, row in enumerate(matrix):
+        for j, word in enumerate(row):
+            print(f"Position: ({i}, {j}), Word: {word}")
+
+
+def write_matrix_to_file(filename, matrix):
+    with open(filename, 'w') as file:
+        for row in matrix:
+            file.write(' '.join(row) + '\n')
+
+def update_matrix_at_position(filename, row, col, word):
+    # Read the matrix from the file
+    matrix = read_matrix_from_file(filename)
+    
+    # Update the matrix at the specified position
+    if 0 <= row < len(matrix) and 0 <= col < len(matrix[row]):
+        matrix[row][col] = word
+    else:
+        print("Invalid row or column index")
+        return
+    
+    # Write the updated matrix back to the file
+    write_matrix_to_file(filename, matrix)
+
+
+
 
 # LOCAL MAIN
 if __name__ == "__main__":
