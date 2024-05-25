@@ -178,13 +178,6 @@
 	)
 )
 
-(defrule Reset_hit (declare (salience -1))
-	=>
-	(if (eq ?*hit* 1) then
-		(bind ?*hit* 0)
-	)
-
-)
 ;;; SEARCH ALGO RULES
 (defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
     (declare (salience 20))
