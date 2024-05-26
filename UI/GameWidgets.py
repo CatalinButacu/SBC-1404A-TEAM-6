@@ -392,21 +392,21 @@ class EnemyTerrainWidget(QWidget):
             if (x, y, o) != (None, None, None):
                 id_ship_to_place += 1
                 self.place_ship_on_matrix(x, y, s, o, id_ship_to_place)
-                print(self.terrain_widget.data["ids"])
+                # print(self.terrain_widget.data["ids"])
             else:
                 print("Cannot place ship of size", size)
 
     def select_random_ref_position(self, size):
         orientation = random.choice([Ship.HORIZONTAL, Ship.VERTICAL])
         for _ in range(1000):  # Attempt a maximum of 1000 times to find a valid position
-            x = random.randint(0, self.terrain_widget.squares - 1)
-            y = random.randint(0, self.terrain_widget.squares - 1)
+            x = random.randint(0, 9)
+            y = random.randint(0, 9)
             if self.is_valid_position(x, y, size, orientation):
                 return x, y, orientation
         return None, None, None
 
     def is_valid_position(self, x, y, sizes, orientation):
-        print(x,y,sizes)
+        # print(x,y,sizes)
         if orientation == Ship.HORIZONTAL:
             for i in range(sizes):
                 if x + i >= self.terrain_widget.squares:
@@ -424,12 +424,12 @@ class EnemyTerrainWidget(QWidget):
     def place_ship_on_matrix(self, x, y, sizes, orientation, ship_id):
         if orientation == 'horizontal':
             for i in range(sizes):
-                self.terrain_widget.data["state"][x + i][y] = MapState.SHIP_PLACED.value
-                self.terrain_widget.data["ids"][x + i][y] = ship_id
+                self.terrain_widget.data["state"][min(x + i,9)][y] = MapState.SHIP_PLACED.value
+                self.terrain_widget.data["ids"][min(x + i,9)][y] = ship_id
         else:
             for i in range(sizes):
-                self.terrain_widget.data["state"][x][y + i] = MapState.SHIP_PLACED.value
-                self.terrain_widget.data["ids"][x][y + i] = ship_id
+                self.terrain_widget.data["state"][x][min(y + i,9)] = MapState.SHIP_PLACED.value
+                self.terrain_widget.data["ids"][x][min(y + i,9)] = ship_id
 
     def drop_ability(self, id_ability:int):
         self.terrain_widget.selected_ability = Ability(id_ability)

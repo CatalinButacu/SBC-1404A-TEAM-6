@@ -27,14 +27,14 @@ class BattleshipUI(QMainWindow):
         self.scene_stop = None
         #self.end_game("lose")
         self.launch_game()
+        self.raise_()
+        self.activateWindow()
 
     def center_window(self):
         screen_geometry = QCoreApplication.instance().desktop().screenGeometry()
         center_x = screen_geometry.width() // 2 - self.width() // 2
         center_y = screen_geometry.height() // 2 - self.height() // 1.8
         self.move(int(center_x), int(center_y))
-        self.raise_()
-        self.activateWindow()
 
     def launch_game(self):
         self.scene_start = StartGameWidget()
