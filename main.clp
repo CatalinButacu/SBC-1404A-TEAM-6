@@ -68,8 +68,11 @@
 )
 
 (defrule Stergere_atacuri_nefolosite (declare (salience 2))
-    ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-    (Teren ?Teren pozitia ?rand ?coloana este atacata)
+	(or
+		?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+		?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+	)
+	(Teren ?Teren pozitia ?rand ?coloana este $? atacata)
     =>
     (retract ?atac)
 )
@@ -141,7 +144,7 @@
 
 ;;; FRONTIER CALCULATION 
 
-(defrule Calcul_frontiera (declare (salience 3))
+(defrule Calculul_frontierei (declare (salience 3))
 	?calcul <- (calcul_frontiera ?rand ?coloana)
 	(dificultate ?dificultate)
 	=>	
