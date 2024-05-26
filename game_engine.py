@@ -32,6 +32,15 @@ def execute_update_map():
     env.eval("(assert (update_map_now))")
     env.run(1)
 
+def execute_update_file_map_using_matrix(matrix:dict):
+    filename = "map_parcurs.txt"
+    write_matrices_to_file(filename, matrix)
+    print("semnal ajuns in GameEngine")
+    print(matrix['state'])
+    print(matrix['ids'])
+
+def execute_update_matrix_using_file_map(filename=""):
+    pass
 
 # GETTERS
 def get_all_facts_list():

@@ -120,7 +120,7 @@ class InfoWidget(QWidget):
         InfoWidget._instance = self
 
     def start_button_consumed(self):
-        self.signal_next_button_presed.emit()
+        self.signal_next_button_pressed.emit()
         self.start_button.blockSignals(True)
         self.start_button.setObjectName("start_button_waiting")
         self.start_button.setText("Waiting...")

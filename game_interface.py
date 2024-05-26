@@ -14,6 +14,10 @@ from PyQt5.QtCore import QCoreApplication
 from UI.ModuleWidgets import StartGameWidget, GamePlayWidget, EndGameWidget
 from UI.DataCollector import GameState
 
+# CLIPS ENV
+from game_engine import execute_update_file_map_using_matrix
+from game_engine import execute_update_matrix_using_file_map
+
 class BattleshipUI(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -47,6 +51,12 @@ class BattleshipUI(QMainWindow):
         self.scene_start.signal_name_changed.connect(self.scene_play.set_username)
         self.scene_start.signal_level_changed.connect(self.scene_play.set_difficulty)
         self.scene_start.signal_change_state.connect(self.update_state)
+        self.scene_play.signal_update_clips_map_request.connect(self.update_clips_map)
+
+    def update_clips_map(self, matrix:dict):
+        execute_update_file_map_using_matrix(matrix)
+        print("Semnal ajuns la BattleshipUI")
+
 
 
     def start_game(self):

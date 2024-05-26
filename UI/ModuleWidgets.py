@@ -89,6 +89,7 @@ class StartGameWidget(QWidget):
 ### GAME SCENE
 class GamePlayWidget(QWidget):
     signal_rearm_start_button = pyqtSignal()
+    signal_update_clips_map_request = pyqtSignal(dict)
 
     def __init__(self):
         # init game widgets
@@ -123,6 +124,8 @@ class GamePlayWidget(QWidget):
         self.user_widget.signal_all_ships_placed.connect(self.activate_enemy_terrain)
         self.signal_rearm_start_button.connect(self.info_widget.start_button_rearm)
 
+        self.info_widget.start_button.clicked.connect(self.deactivate_enemy_terrain)
+
     def addMessage(self, message):
         self.message_area_widget.add_message(message)
 
@@ -140,6 +143,8 @@ class GamePlayWidget(QWidget):
 
     def deactivate_enemy_terrain(self):
         self.enemy_widget.blockSignals(True)
+        print("Semnal emis de la GamePlayWidget")
+        self.signal_update_clips_map_request.emit(self.user_widget.terrain_widget.data)
 
 
     def decrease_ship_info(self, tier):
