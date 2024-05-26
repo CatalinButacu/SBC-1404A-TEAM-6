@@ -41,7 +41,9 @@
 	?*y0* = 0
 	?*y1* = 0
 	?*hit* = 0 ;folosit pentru a opri atacurile random de pe frontiera atunci cand a fost lovita o nava
-    ?*isDebugging* = 0 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
+	?*nr_atacuri_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
+    ?*calcul_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
+	?*isDebugging* = 0 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
 )
 
 
@@ -62,6 +64,7 @@
     (retract ?atac ?status_teren)
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 	(assert (update_map_now))
+	(bind ?*calcul_frontiera* 1)
 )
 
 (defrule Actualizare_Nava_atacata_B_jucator (declare (salience 1))
@@ -166,19 +169,32 @@
 	(bind ?*y0* 0)
 	(bind ?*y1* 0)
 	(bind ?*hit* 0)
+	(bind ?*nr_atacuri_frontiera* 0)
 )
 
 ;;; SYSTEM RANDOM ATTACK USING FRONTIER - WORK IN PROGRESS
 
 (defrule Sistem_ataca_frontiera (declare (salience 1))
-	(frontiera ?x0 ?y0 ?x1 ?y1)
+	?front<-(frontiera ?x0 ?y0 ?x1 ?y1)
 	(or
 	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este liber)
 	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este ocupata $?)
 	)
 	=>
-	(if (eq ?*hit* 0) then
+	(if (and (eq ?*hit* 0) (< ?*nr_atacuri_frontiera* 4)) then
 		(assert (Sistem ataca pozitia ?rand ?coloana din terenul T1 cu B))
+		(bind ?*nr_atacuri_frontiera* (+ ?*nr_atacuri_frontiera* 1))
+		(bind ?*calcul_frontiera* 0)
+	)
+	
+	(if (and (eq ?*hit* 0) (>= ?*nr_atacuri_frontiera* 3) (eq ?*calcul_frontiera* 1)) then
+		(retract ?front)
+		(assert (calcul_frontiera ?rand ?coloana))
+		(bind ?*calcul_frontiera* 0)
+	)
+	
+	(if (eq ?*hit* 1) then
+		(retract ?front)
 	)
 )
 
@@ -468,13 +484,45 @@
 			
 			
 			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
+	)
+)
+
+(defrule Rule_Opening_File_Write
+	(declare (salience 97))
+    =>
+	(open map_parcurs.txt map_parcurs "w")
+	(if (eq ?*isDebugging* 1) then (printout t "Putem scrie in map.txt" crlf))
+)
+
+(defrule Rule_Closing_File_Write
+	(declare (salience 95))
+	=>
+	(close map_parcurs)
+	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
+)
+
+
+
+(defrule Rule_Writing_In_Map
+    (declare (salience 96))
+	?Delete1 <-(update_map Yes)
+	?Delete2 <-(global_var ?row ?col)
+	(or (Teren T1 pozitia ?row ?col este ocupata de nava ?check si este ?atacat_sau_nu)
+		(Teren T1 pozitia ?row ?col este ?check)
+	)
+    =>
+	(if (<= ?row ?*nr_linii*)
+		then 
+			(printout map_parcurs ?check " " )
+			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
+
 			
 			(if (< ?col ?*nr_coloane*)
 				then
 					(assert (global_var ?row (+ ?col 1)))
-				;	(retract ?Delete1)
+					(retract ?Delete1)
 					(retract ?Delete2)
-	;				(assert (rule_writing_in_map 2))
+					(assert (rule_writing_in_map 2))
 				else
 					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
 					(retract ?Delete2)
@@ -517,9 +565,9 @@
 			(if (< ?col ?*nr_coloane*)
 				then
 					(assert (global_var ?row (+ ?col 1)))
-				;	(retract ?Delete1)
+					(retract ?Delete1)
 					(retract ?Delete2)
-	;				(assert (rule_writing_in_map 2))
+					(assert (rule_writing_in_map 2))
 				else
 					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
 					(retract ?Delete2)
