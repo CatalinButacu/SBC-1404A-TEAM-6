@@ -56,35 +56,43 @@ def print_all_facts():
         print(fact)
 
 # READ / WRITE MAP
-def read_matrix_from_file(filename):
+def read_matrices_from_file(filename):
     with open(filename, 'r') as file:
-        matrix = [line.strip().split() for line in file]
-    return matrix
-
-def print_positions_and_words(matrix):
-    for i, row in enumerate(matrix):
-        for j, word in enumerate(row):
-            print(f"Position: ({i}, {j}), Word: {word}")
+        content = file.read().strip().split('\n\n')
+        matrix_state = [list(map(int, line.split())) for line in content[0].strip().split('\n')]
+        matrix_ids = [list(map(int, line.split())) for line in content[1].strip().split('\n')]
+    return {"state": matrix_state, "ids": matrix_ids}
 
 
-def write_matrix_to_file(filename, matrix):
+def write_matrices_to_file(filename, matrix):
+    matrix_state = matrix["state"]
+    matrix_ids = matrix["ids"]
+
     with open(filename, 'w') as file:
-        for row in matrix:
-            file.write(' '.join(row) + '\n')
+        for row in matrix_state:
+            file.write(' '.join(map(str, row)) + '\n')
+        file.write('\n')
+        for row in matrix_ids:
+            file.write(' '.join(map(str, row)) + '\n')
 
-def update_matrix_at_position(filename, row, col, word):
-    # Read the matrix from the file
-    matrix = read_matrix_from_file(filename)
-    
-    # Update the matrix at the specified position
-    if 0 <= row < len(matrix) and 0 <= col < len(matrix[row]):
-        matrix[row][col] = word
-    else:
-        print("Invalid row or column index")
-        return
-    
-    # Write the updated matrix back to the file
-    write_matrix_to_file(filename, matrix)
+
+def update_app_matrix_with_file_matrix(filename, matrix_app):
+    # Read the matrices from the file
+    matrix = read_matrices_from_file(filename)
+    matrix_app = matrix
+    return matrix_app
+
+def print_matrices(matrix):
+    matrix_state = matrix["state"]
+    matrix_ids = matrix["ids"]
+
+    print("State matrix:")
+    for row in matrix_state:
+        print(' '.join(map(str, row)))
+
+    print("\nIDs matrix:")
+    for row in matrix_ids:
+        print(' '.join(map(str, row)))
 
 
 
