@@ -161,7 +161,7 @@ class TerrainWidget(QWidget):
 
     def place_line_assault(self, x, y):
         for i in range(self.squares):
-            self.place_bomb(x,y+i)
+            self.place_bomb(x,i)
 
     def update_matrix(self,x,y,size,orientation):
         self.id_count += 1
