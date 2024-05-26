@@ -34,7 +34,7 @@ def execute_update_map():
 
 def execute_update_file_map_using_matrix(matrix:dict):
     filename = "map_parcurs.txt"
-    write_matrices_to_file(filename, matrix)
+    write_matrix_to_file(filename, matrix)
     print("semnal ajuns in GameEngine")
     print(matrix['state'])
     print(matrix['ids'])
@@ -104,6 +104,52 @@ def print_matrices(matrix):
         print(' '.join(map(str, row)))
 
 
+def read_and_transform_matrix(filename):
+    matrix_state = []
+    matrix_ids = []
+    with open(filename, 'r') as file:
+        for line in file:
+            row_state = []
+            row_ids = []
+            items = line.strip().split()
+            for item in items:
+                if item == "liber":
+                    row_state.append(0)
+                    row_ids.append(0)  # Add 0 to IDs matrix when there's no corresponding ID
+                elif item == "atacata":
+                    row_state.append(1)
+                    row_ids.append(0)  # Add 0 to IDs matrix when there's no corresponding ID
+                elif item.startswith("N"):
+                    if "_a" in item:
+                        num = int(item[1:-2])
+                        row_state.append(3)  # Set the state matrix value to 3 when encountering "_a"
+                    else:
+                        num = int(item[1:])
+                        row_state.append(2)
+                    row_ids.append(num)
+                else:
+                    row_state.append(3)
+                    row_ids.append(int(item))
+            matrix_state.append(row_state)
+            matrix_ids.append(row_ids)
+    return {"state": matrix_state, "ids": matrix_ids}
+
+def write_matrix_to_file(filename, matrix):
+    with open(filename, 'w') as file:
+        state_matrix = matrix["state"]
+        ids_matrix = matrix["ids"]
+        for state_row, ids_row in zip(state_matrix, ids_matrix):
+            row_items = []
+            for state, id_ in zip(state_row, ids_row):
+                if state == 0:
+                    row_items.append("liber")
+                elif state == 1:
+                    row_items.append("atacata")
+                elif state == 2:
+                    row_items.append(f"N{id_}")
+                elif state == 3:
+                    row_items.append(f"N{id_}_a")
+            file.write(' '.join(row_items) + '\n')
 
 
 # LOCAL MAIN
