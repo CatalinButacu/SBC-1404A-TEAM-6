@@ -67,6 +67,13 @@
 	(bind ?*calcul_frontiera* 1)
 )
 
+(defrule Stergere_atacuri_nefolosite (declare (salience 2))
+    ?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    (Teren ?Teren pozitia ?rand ?coloana este atacata)
+    =>
+    (retract ?atac)
+)
+
 (defrule Actualizare_Nava_atacata_B_jucator (declare (salience 1))
     ?atac <- (Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
     ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
@@ -204,7 +211,7 @@
     (Sistem decide)
     (Teren T1 pozitia ?rowAttacked ?colAttacked este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
     (Nava ?id_nava nu este distrusa)  
-    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))  ; check for no more planning actions
+    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))    ; check for no more planning actions  
 
     ; investigam teritoriul alaturat
     (and ; in the MIDDLE - it fails for edges because some facts doesn't exist at moment in database
@@ -292,7 +299,7 @@
     (Teren T1 pozitia ?rowHit2 ?colHit2 este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
     (Teren T1 pozitia ?rowHitIntern ?colHitIntern este ocupata de nava ?id_nava si este ?stare&:(eq ?stare atacata))
     (Nava ?id_nava nu este distrusa)
-    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))  ; check for no more planning actions
+    (not (Sistem ataca pozitia ? ? din terenul ? cu ?))     ; check for no more planning actions
    
     ; check if last hits are on different rows or columns
     (test
