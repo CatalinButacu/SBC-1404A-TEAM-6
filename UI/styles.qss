@@ -12,29 +12,30 @@ TerrainWidget QPushButton#seaPosition
 TerrainWidget QPushButton#seaPosition:disabled
 {
     border: 1px solid #57ceff;
-    background: #b3e7fc
+    color: #5D3FD3;
+    background: #b3e7fc;
 }
 
 
 UserTerrainWidget QLabel#userLabel,
 EnemyTerrainWidget QLabel#enemyLabel
  {
-    font-size: 24px; 
-    font-weight: bold; 
-    font-style: italic; 
-    color: #333; 
+    font-size: 24px;
+    font-weight: bold;
+    font-style: italic;
+    color: #333;
     text-align: center;
-    padding: 5px 0; 
+    padding: 5px 0;
 }
 
 
 UserTerrainWidget QPushButton#placeNavyTier1,
 UserTerrainWidget QPushButton#placeNavyTier2,
 UserTerrainWidget QPushButton#placeNavyTier3,
-UserTerrainWidget QPushButton#placeNavyTier4 
+UserTerrainWidget QPushButton#placeNavyTier4
 {
     border: 2px solid #044553;
-    font-weight: bold; 
+    font-weight: bold;
     font-size: 20;
     padding: 5px;
 }
@@ -63,7 +64,7 @@ EnemyTerrainWidget QPushButton#bombButton,
 EnemyTerrainWidget QPushButton#scanButton,
 EnemyTerrainWidget QPushButton#lineAssaultButton {
     border: 2px solid #044553;
-    font-weight: bold; 
+    font-weight: bold;
     font-size: 20;
     padding: 5px;
 }
@@ -79,6 +80,50 @@ EnemyTerrainWidget QPushButton#scanButton:pressed,
 EnemyTerrainWidget QPushButton#lineAssaultButton:pressed {
     background-color: #34495E; /* Darker gray background when pressed */
     border-color: #FFF; /* White border color when pressed */
+}
+
+
+/**********************   GAME SCENE   ***********************/
+InfoWidget QPushButton#start_button_working {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 2px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 0px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+InfoWidget QPushButton#start_button_waiting {
+    background-color: #4682B4;
+    color: white;
+    border: none;
+    padding: 2px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 0px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+InfoWidget QPushButton#start_button_loading {
+    background-color: #A9A9A9;
+    color: white;
+    border: none;
+    padding: 2px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 2px 0px;
+    cursor: pointer;
+    border-radius: 10px;
 }
 
 
@@ -121,7 +166,7 @@ EndGameWidget QWidget#EndGameWidget {
     background-color: #f0f0f0; /* Light gray background */
 }
 
-EndGameWidget QLabel#winResult, 
+EndGameWidget QLabel#winResult,
 EndGameWidget QLabel#loseResult
 {
     font-size: 24px;

@@ -12,13 +12,15 @@ from PyQt5.QtCore import QCoreApplication
 
 # LOCAL WIDGETS
 from UI.ModuleWidgets import StartGameWidget, GamePlayWidget, EndGameWidget
+from UI.DataCollector import GameState
 
 class BattleshipUI(QMainWindow):
     def __init__(self):
         super().__init__()
         print("BattleshipUI created...")
+        self.state = GameState.LOADING
         self.setWindowTitle("Battleship Game SBC")
-        self.setFixedSize(1000, 820)
+        self.setFixedSize(980, 820)
         self.center_window()
         self.scene_start = None
         self.scene_play = None
@@ -31,14 +33,21 @@ class BattleshipUI(QMainWindow):
         center_x = screen_geometry.width() // 2 - self.width() // 2
         center_y = screen_geometry.height() // 2 - self.height() // 1.8
         self.move(int(center_x), int(center_y))
+        self.raise_()
+        self.activateWindow()
 
     def launch_game(self):
         self.scene_start = StartGameWidget()
         self.scene_play = GamePlayWidget()
-        self.scene_start.signal_start_game.connect(self.start_game)
-        self.scene_start.signal_name_changed.connect(self.scene_play.info_widget.set_username)
-        self.scene_start.signal_level_changed.connect(self.scene_play.info_widget.set_difficulty)
         self.setCentralWidget(self.scene_start)
+        self.connect_signals()
+
+    def connect_signals(self):
+        self.scene_start.signal_start_game.connect(self.start_game)
+        self.scene_start.signal_name_changed.connect(self.scene_play.set_username)
+        self.scene_start.signal_level_changed.connect(self.scene_play.set_difficulty)
+        self.scene_start.signal_change_state.connect(self.update_state)
+
 
     def start_game(self):
         if self.scene_start:
@@ -57,6 +66,16 @@ class BattleshipUI(QMainWindow):
         if self.scene_stop:
             self.scene_stop.deleteLater()
         self.launch_game()
+
+    def update_state(self, state):
+        self.state = state
+
+    def update_map(self, isUser=False):
+        path = "map_user.txt" if isUser else "map_system.txt"
+        with open(path, "r+"):
+            pass
+
+
 
 
 def load_styles_from_file(root, file_path):

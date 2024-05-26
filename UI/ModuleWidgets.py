@@ -14,12 +14,14 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLa
 from UI.ComunicationWidgets import ScrollableMessageBox, InfoWidget
 from UI.GameWidgets import UserTerrainWidget, EnemyTerrainWidget
 
+from UI.DataCollector import GameState
 
 ### STARTS SCENE
 class StartGameWidget(QWidget):
     signal_name_changed = pyqtSignal(str)
     signal_level_changed = pyqtSignal(int)
     signal_start_game = pyqtSignal(bool)
+    signal_change_state = pyqtSignal(int)
 
     def __init__(self):
         super().__init__()
@@ -36,6 +38,7 @@ class StartGameWidget(QWidget):
         interesting_area_layout = QVBoxLayout()
         interesting_area_layout.addStretch(1)
 
+        self.signal_change_state.emit(GameState.FILLING_INFO)
         name_label = QLabel("Insert your name:")
         self.name_edit = QLineEdit()
         self.name_edit.editingFinished.connect(self.on_username_changed)
@@ -85,10 +88,12 @@ class StartGameWidget(QWidget):
 
 ### GAME SCENE
 class GamePlayWidget(QWidget):
+    signal_rearm_start_button = pyqtSignal()
+
     def __init__(self):
         # init game widgets
         super().__init__()
-        print("BattleshipUI created...")
+        print("GamePlayWidget created...")
         self.user_widget = UserTerrainWidget()
         self.enemy_widget = EnemyTerrainWidget()
         self.message_area_widget = ScrollableMessageBox()
@@ -105,15 +110,49 @@ class GamePlayWidget(QWidget):
         terrain_layout.setAlignment(self.enemy_widget, Qt.AlignCenter)
         layout.addWidget(terrain_widget)
         layout.addWidget(self.info_widget)
-        # notify user that game is ready to continue
 
-        print("GamePlayWidget created...")
-        self.message_area_widget.add_message("Welcome to the game")
+        self.info_widget.ships_alive = {
+            "Corvete": self.user_widget.buttonT1.getCount(),
+            "Canoniere": self.user_widget.buttonT2.getCount(),
+            "Fregate": self.user_widget.buttonT3.getCount(),
+            "Distrugatoare": self.user_widget.buttonT4.getCount()
+        }
 
+        self.enemy_widget.setEnabled(self.user_widget.all_ships_placed)
         self.user_widget.addMessageToConsole.connect(self.addMessage)
+        self.user_widget.signal_all_ships_placed.connect(self.activate_enemy_terrain)
+        self.signal_rearm_start_button.connect(self.info_widget.start_button_rearm)
 
     def addMessage(self, message):
         self.message_area_widget.add_message(message)
+
+    def set_username(self, name):
+        self.info_widget.set_username(name)
+        self.message_area_widget.add_message(f"Welcome to the game {name.upper()}")
+
+    def set_difficulty(self, dif):
+        self.info_widget.set_difficulty(dif)
+
+    def activate_enemy_terrain(self):
+        self.enemy_widget.setEnabled(True)
+        self.enemy_widget.blockSignals(False)
+        self.signal_rearm_start_button.emit()
+
+    def deactivate_enemy_terrain(self):
+        self.enemy_widget.blockSignals(True)
+
+
+    def decrease_ship_info(self, tier):
+        if tier == 1:
+            self.info_widget.ships_alive["Corvete"] -= 1
+        elif tier == 2:
+            self.info_widget.ships_alive["Canoniere"] -= 1
+        elif tier == 3:
+            self.info_widget.ships_alive["Fregate"] -= 1
+        elif tier == 4:
+            self.info_widget.ships_alive["Distrugatoare"] -= 1
+
+        self.info_widget.update_info()
 
 
 ### END SCENE

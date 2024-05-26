@@ -7,9 +7,8 @@ Created on Sat Apr 20 10:06:56 2024
 
 import sys
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QTextEdit
-from PyQt5.QtCore import QTimer, QDateTime, QPropertyAnimation, QEasingCurve
-
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit, QPushButton
+from PyQt5.QtCore import QTimer, QDateTime, QPropertyAnimation, QEasingCurve, pyqtSignal
 
 ### ENABLE DISPLAY TO ACTION HISTORY
 class ScrollableMessageBox(QWidget):
@@ -66,6 +65,9 @@ class ScrollableMessageBox(QWidget):
 
 ### HINTS AREA
 class InfoWidget(QWidget):
+    _instance = None
+    signal_next_button_pressed = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         print("InfoWidget created...")
@@ -75,6 +77,12 @@ class InfoWidget(QWidget):
             1: "<Some hints for level 1/>",  # get hints on using abilities and see all type of navies remained
             2: "<Some hints for level 2/>",  # see only navy remained
             3: "<Some hints for level 3/>"   # i think at no hints at all
+        }
+        self.ships_alive = {
+            "Corvete": 0,
+            "Canoniere": 0,
+            "Fregate": 0,
+            "Distrugatoare": 0
         }
 
         self.info_layout = QVBoxLayout()
@@ -90,26 +98,73 @@ class InfoWidget(QWidget):
         self.hint_label.setFont(QFont("Arial", 8, QFont.Bold))
         self.info_layout.addWidget(self.hint_label)
 
+        # Create a horizontal layout for the hints and the start button
+        self.hint_button_layout = QHBoxLayout()
+
         self.status_label = QLabel()
-        self.update_status()
-        self.info_layout.addWidget(self.status_label)
+        self.hint_button_layout.addWidget(self.status_label)
+
+        # Add start button
+        self.start_button = QPushButton("Place all ships to start...")
+        self.start_button.setFixedSize(200, 40)
+        self.start_button.blockSignals(True)
+        self.start_button.setObjectName("start_button_loading") # start_button_working, start_button_waiting, start_button_loading
+        self.start_button.clicked.connect(self.start_button_consumed)
+        self.hint_button_layout.addWidget(self.start_button)
+
+        # Add the hint_button_layout to the main info_layout
+        self.info_layout.addLayout(self.hint_button_layout)
 
         self.setLayout(self.info_layout)
+        self.update_status()
+        InfoWidget._instance = self
+
+    def start_button_consumed(self):
+        self.signal_next_button_presed.emit()
+        self.start_button.blockSignals(True)
+        self.start_button.setObjectName("start_button_waiting")
+        self.start_button.setText("Waiting...")
+        self.start_button.setStyleSheet("background-color: #4682B4;")
+        self.start_button.updateGeometry()
+
+    def start_button_rearm(self):
+        self.start_button.setObjectName("start_button_working")
+        self.start_button.setText("Next...")
+        self.start_button.setStyleSheet("background-color: #4CAF50;")
+        self.start_button.blockSignals(False)
+        self.start_button.updateGeometry()
 
     def set_username(self, username):
         self.current_name = username
+        print("Username setat in InfoWidget")
         self.update_status()
 
     def set_difficulty(self, difficulty):
         self.current_level = int(difficulty)
+        print("Dificultate setat in InfoWidget")
         self.update_status()
 
     def update_status(self):
         if self.current_name is not None:
-            status_text = f"Status for {self.current_name}, level {self.current_level}: {self.level_hints[self.current_level]}"
+            status_text = f"Hints for {self.current_name.upper()} on level {self.current_level} \n {self.level_hints[self.current_level]}"
         else:
             status_text = "Waiting for user information..."
         self.status_label.setText(status_text)
+        self.update_info()
+
+    def update_info(self):
+        txt = "Ships alive: \t"
+        txt += f"Corvete : {self.ships_alive['Corvete']}  --  "
+        txt += f"Canoniere : {self.ships_alive['Canoniere']}  --  "
+        txt += f"Fregate : {self.ships_alive['Fregate']}  --  "
+        txt += f"Distrugatoare : {self.ships_alive['Distrugatoare']} "
+        self.info_text.setText(txt)
+
+    @staticmethod
+    def get_instance():
+        if InfoWidget._instance is None:
+            InfoWidget._instance = InfoWidget()
+        return InfoWidget._instance
 
 
 def test_scrollarea():
@@ -129,5 +184,5 @@ def test_infoarea():
     sys.exit(app.exec_())
 
 if __name__ == '__main__':
-    #test_infoarea()
-    test_scrollarea()
+    test_infoarea()
+    #test_scrollarea()

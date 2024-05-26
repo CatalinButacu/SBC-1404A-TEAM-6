@@ -37,6 +37,24 @@ PATH_ABILITY = {
     3:"Resources\components\ASSAULT.png",
 }
 
+from enum import Enum
+
+class GameState(Enum):
+    LOADING = 0
+    FILLING_INFO = 1
+    PLACING_SHIPS = 2
+    GAME_STARTED = 3
+    USER_DECIDING = 4
+    SYSTEM_DECIDING = 5
+    GAME_ENDED = 6
+    UPDATE_MAP = 7
+
+class MapState(Enum):
+    SPACE_FREE = 0
+    SPACE_ATTACKED = 1
+    SHIP_PLACED = 2
+    SHIP_ATTACKED = 3
+
 
 """
     Ship

@@ -6,11 +6,17 @@ Created on Fri Apr 19 16:15:36 2024
 """
 
 import sys
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+import random
+import numpy as np
+
+from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QLabel, QPushButton, QGridLayout, QHBoxLayout
 from PyQt5.QtGui import QPixmap, QIcon, QCursor
-from UI.DataController import *
+
+from UI.DataCollector import *
 from UI.UI_Elements import ShipPlacementButton, AbilityPlacementButtons
+from UI.ModuleWidgets import InfoWidget
+
 
 
 ### TERRAIN CLASSES
@@ -30,7 +36,9 @@ class TerrainWidget(QWidget):
         self.ships = []
         self.grid_size = 40
         self.squares = 10
+        self.id_count = 0
         self.init_ui()
+        self.data = self.init_data(10,10)
 
     def init_ui(self):
         layout = QGridLayout(self)
@@ -52,12 +60,27 @@ class TerrainWidget(QWidget):
                 button.clicked.connect(lambda state, row = i, col = j: self.place_item(row, col))
             self.buttons.append(row)
 
+    def init_data(self, W, H):
+        matrix_state = np.zeros((W,H),dtype=int)
+        for w in range(W):
+            for h in range(H):
+                matrix_state[w][h] = MapState.SPACE_FREE.value
+
+        matrix_ids = np.zeros((W,H),dtype=int)
+        matrix = {
+            "state": matrix_state,
+            "ids": matrix_ids
+            }
+        return matrix
+
+
     def place_item(self, row, col):
         # check for enemy terrain
         if self.parentWidget().objectName() == "EnemyTerrainWidget":
             if self.selected_ability:
                 self.selected_ability.setRefPos(row, col)
                 self.place_ability()
+
         # check for user terrain
         if self.parentWidget().objectName() == "UserTerrainWidget":
             self.parentWidget().check_ships_left()
@@ -81,6 +104,7 @@ class TerrainWidget(QWidget):
 
         x, y = self.selected_ship.refX, self.selected_ship.refY
         size = self.selected_ship.size
+        self.update_matrix(x, y, size, self.selected_ship.orientation)
 
         self.deactivate_ship_cells()
         ship_image = QPixmap(self.selected_ship.image_path)
@@ -119,15 +143,39 @@ class TerrainWidget(QWidget):
     def place_bomb(self, x, y):
         button = self.buttons[x][y]
         button.setEnabled(False)
-        button.setObjectName("seaEnemyAttacked")
+        new_style = "color: red; font-size: 30px; font-weight: bold;" if self.data["ids"][x][y] != 0 else "color: #5D3FD3;"
+        button.setStyleSheet(new_style)
+        button.setText("X")
+        self.data["state"][x][y] = MapState.SPACE_ATTACKED.value if self.data["ids"][x][y]==0 else MapState.SHIP_ATTACKED.value
+
 
     def place_scan(self, x, y):
-        # add clips fact to execute (wainting for the mechanism)
-        pass
+        info = InfoWidget.get_instance()
+        difficulty = info.current_level
+        area = 4 - difficulty
+        for i in range(max(x-area,0), min(x+area+1,10)):
+            for j in range(max(y-area,0), min(y+area+1,10)):
+                new_style = "color: yellow; font-size: 30px; font-weight: bold;" if self.data["ids"][i][j] != 0 else "color: gray;"
+                self.buttons[i][j].setStyleSheet(new_style)
+                self.buttons[i][j].setText("?")
 
     def place_line_assault(self, x, y):
-        # add clips fact to execute (wainting for the mechanism)
-        pass
+        for i in range(self.squares):
+            self.place_bomb(x,y+i)
+
+    def update_matrix(self,x,y,size,orientation):
+        self.id_count += 1
+        if orientation == self.selected_ship.VERTICAL:
+            for i in range(size):
+                self.data["state"][x+i][y] = MapState.SHIP_PLACED.value
+                self.data["ids"][x+i][y] = self.id_count
+        else:
+            for i in range(size):
+                self.data["state"][x][y+i] = MapState.SHIP_PLACED.value
+                self.data["ids"][x][y+i] = self.id_count
+
+        #print(self.data["state"])
+        #print(self.data["ids"])
 
 
     def deactivate_ship_cells(self):
@@ -252,9 +300,16 @@ class UserTerrainWidget(QWidget):
         self.terrain_widget.selected_ship = Ship(size, orientation)
 
     def check_ships_left(self):
-        if self.buttonT1.getCount() == 0 and self.buttonT2.getCount() == 0 and self.buttonT3.getCount() == 0 and self.buttonT4.getCount() == 0:
-            self.signal_all_ships_placed.emit()
+        QTimer(self).start(1000)
+        sum_control = self.buttonT1.getCount()
+        sum_control += self.buttonT2.getCount()
+        sum_control += self.buttonT3.getCount()
+        sum_control += self.buttonT4.getCount()
+
+        if sum_control == 0:
             self.all_ships_placed = True
+            self.setCursor(Qt.ArrowCursor)
+            self.signal_all_ships_placed.emit()
             self.addMessageToConsole.emit("All ships have been placed.")
 
     def decrease_count(self, size:int):
@@ -288,6 +343,8 @@ class EnemyTerrainWidget(QWidget):
         super().__init__(parent)
         self.setObjectName("EnemyTerrainWidget")
         self.init_ui()
+        self.terrain_widget.data["ids"][1][1] = 1
+        self.terrain_widget.data["ids"][1][2] = 1
 
     def init_ui(self):
         layout = QVBoxLayout(self)
@@ -324,6 +381,56 @@ class EnemyTerrainWidget(QWidget):
 
         layout.addLayout(button_layout)
 
+        self.init_ships()
+
+    # algo place ships
+    def init_ships(self):
+        sizes = [4,3,3,2,2,2,1,1,1]
+        id_ship_to_place = 0
+        for s in sizes:
+            x, y, o = self.select_random_ref_position(s)
+            if (x, y, o) != (None, None, None):
+                id_ship_to_place += 1
+                self.place_ship_on_matrix(x, y, s, o, id_ship_to_place)
+                print(self.terrain_widget.data["ids"])
+            else:
+                print("Cannot place ship of size", size)
+
+    def select_random_ref_position(self, size):
+        orientation = random.choice([Ship.HORIZONTAL, Ship.VERTICAL])
+        for _ in range(1000):  # Attempt a maximum of 1000 times to find a valid position
+            x = random.randint(0, self.terrain_widget.squares - 1)
+            y = random.randint(0, self.terrain_widget.squares - 1)
+            if self.is_valid_position(x, y, size, orientation):
+                return x, y, orientation
+        return None, None, None
+
+    def is_valid_position(self, x, y, sizes, orientation):
+        print(x,y,sizes)
+        if orientation == Ship.HORIZONTAL:
+            for i in range(sizes):
+                if x + i >= self.terrain_widget.squares:
+                    return False
+                if self.terrain_widget.data["ids"][x + i][y]:
+                    return False
+        else:
+            for i in range(sizes):
+                if y + i >= self.terrain_widget.squares:
+                    return False
+                if self.terrain_widget.data["ids"][x][y + i]:
+                    return False
+        return True
+
+    def place_ship_on_matrix(self, x, y, sizes, orientation, ship_id):
+        if orientation == 'horizontal':
+            for i in range(sizes):
+                self.terrain_widget.data["state"][x + i][y] = MapState.SHIP_PLACED.value
+                self.terrain_widget.data["ids"][x + i][y] = ship_id
+        else:
+            for i in range(sizes):
+                self.terrain_widget.data["state"][x][y + i] = MapState.SHIP_PLACED.value
+                self.terrain_widget.data["ids"][x][y + i] = ship_id
+
     def drop_ability(self, id_ability:int):
         self.terrain_widget.selected_ability = Ability(id_ability)
 
@@ -334,6 +441,9 @@ class EnemyTerrainWidget(QWidget):
             self.scan_button.decrease_count()
         elif id_ability == 3:
             self.line_assault_button.decrease_count()
+
+        print(self.terrain_widget.data["state"])
+        print(self.terrain_widget.data["ids"])
 
 
 def load_styles_from_file(root, file_path):
@@ -350,7 +460,7 @@ if __name__ == '__main__':
     window = QWidget()
     layout = QVBoxLayout(window)
 
-    user_terrain = EnemyTerrainWidget() # UserTerrainWidget() # EnemyTerrainWidget(window)
+    user_terrain = UserTerrainWidget() # UserTerrainWidget() # EnemyTerrainWidget(window)
     layout.addWidget(user_terrain)
     load_styles_from_file(window, "UI/styles.qss")
 
