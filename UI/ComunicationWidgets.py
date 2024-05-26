@@ -80,14 +80,14 @@ class InfoWidget(QWidget):
         }
         self.ships_alive = {
             "Corvete": 0,
-            "Canoniere": 0,
+            "Vânătoare": 0,
             "Fregate": 0,
             "Distrugatoare": 0
         }
 
         self.info_layout = QVBoxLayout()
 
-        self.info_label = QLabel("Game Information")
+        self.info_label = QLabel("Înformații despre joc")
         self.info_label.setFont(QFont("Arial", 8, QFont.Bold))
         self.info_layout.addWidget(self.info_label)
 
@@ -105,8 +105,8 @@ class InfoWidget(QWidget):
         self.hint_button_layout.addWidget(self.status_label)
 
         # Add start button
-        self.start_button = QPushButton("Place all ships to start...")
-        self.start_button.setFixedSize(200, 40)
+        self.start_button = QPushButton("Poziționează toate navele în teren pentru a începe.")
+        self.start_button.setFixedSize(350, 40)
         self.start_button.blockSignals(True)
         self.start_button.setObjectName("start_button_loading") # start_button_working, start_button_waiting, start_button_loading
         self.start_button.clicked.connect(self.start_button_consumed)
@@ -123,13 +123,13 @@ class InfoWidget(QWidget):
         self.signal_next_button_pressed.emit()
         self.start_button.blockSignals(True)
         self.start_button.setObjectName("start_button_waiting")
-        self.start_button.setText("Waiting...")
+        self.start_button.setText("În așteptare...")
         self.start_button.setStyleSheet("background-color: #4682B4;")
         self.start_button.updateGeometry()
 
     def start_button_rearm(self):
         self.start_button.setObjectName("start_button_working")
-        self.start_button.setText("Next...")
+        self.start_button.setText("Următorul pas...")
         self.start_button.setStyleSheet("background-color: #4CAF50;")
         self.start_button.blockSignals(False)
         self.start_button.updateGeometry()
@@ -153,9 +153,9 @@ class InfoWidget(QWidget):
         self.update_info()
 
     def update_info(self):
-        txt = "Ships alive: \t"
+        txt = "Nave în viață: \t"
         txt += f"Corvete : {self.ships_alive['Corvete']}  --  "
-        txt += f"Canoniere : {self.ships_alive['Canoniere']}  --  "
+        txt += f"Vânătoare : {self.ships_alive['Vânătoare']}  --  "
         txt += f"Fregate : {self.ships_alive['Fregate']}  --  "
         txt += f"Distrugatoare : {self.ships_alive['Distrugatoare']} "
         self.info_text.setText(txt)

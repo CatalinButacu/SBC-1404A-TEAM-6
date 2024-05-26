@@ -9,7 +9,7 @@ Created on Wed May  8 21:31:25 2024
 ### SOME DICTIONARIES FOR THE CLASSES
 SHIP_NAME = {
     1:"Corvete",
-    2:"Canoniere",
+    2:"Vânătoare",
     3:"Fregate",
     4:"Distrugatoare",
 }
@@ -27,9 +27,9 @@ PATH_H = {
 }
 
 ABILITY_NAME = {
-    1:"Bomb",
-    2:"Scan",
-    3:"Line Assault",
+    1:"Bombă",
+    2:"Scanare",
+    3:"Atac în linie",
 }
 PATH_ABILITY = {
     1:"Resources\components\TARGET.png",
@@ -96,8 +96,8 @@ class Ability:
         self.id = id_ability
         self.refX = -1
         self.refY = -1
-        self.name = ABILITY_NAME.get(id_ability,'No ability selected')
-        self.image_path = PATH_ABILITY.get(id_ability,'No ability selected')
+        self.name = ABILITY_NAME.get(id_ability,'Nu a fost selectate nicio abilitate')
+        self.image_path = PATH_ABILITY.get(id_ability,'Nu a fost selectate nicio abilitate')
 
     def setRefPos(self, x, y):
         self.refX = x

@@ -39,11 +39,11 @@ class StartGameWidget(QWidget):
         interesting_area_layout.addStretch(1)
 
         self.signal_change_state.emit(GameState.FILLING_INFO)
-        name_label = QLabel("Insert your name:")
+        name_label = QLabel("Introduceți numele de jucator:")
         self.name_edit = QLineEdit()
         self.name_edit.editingFinished.connect(self.on_username_changed)
 
-        difficulty_label = QLabel("Choose difficulty:")
+        difficulty_label = QLabel("Alege dificultatea:")
         self.difficulty_combo = QComboBox()
         self.difficulty_combo.addItems(["1", "2", "3"])
         self.difficulty_combo.currentIndexChanged.connect(self.on_difficulty_changed)
@@ -74,16 +74,16 @@ class StartGameWidget(QWidget):
     def on_username_changed(self):
         username = self.name_edit.text()
         self.signal_name_changed.emit(username)
-        print(F"Client just inserted usernam: {username}")
+        print(F"Jucatorul a introdus numele: {username}")
 
     def on_difficulty_changed(self):
         difficulty = self.difficulty_combo.currentText()
         self.signal_level_changed.emit(int(difficulty))
-        print(F"Client just changed level difficulty: {int(difficulty)}")
+        print(F"Nivelul de dificultate selectat este: {int(difficulty)}")
 
     def on_start_clicked(self):
         self.signal_start_game.emit(True)
-        print("Client just initiated a new sesion game")
+        print("O nouă sesiune de joc a început.")
 
 
 ### GAME SCENE
@@ -131,7 +131,7 @@ class GamePlayWidget(QWidget):
 
     def set_username(self, name):
         self.info_widget.set_username(name)
-        self.message_area_widget.add_message(f"Welcome to the game {name.upper()}")
+        self.message_area_widget.add_message(f"Bine ai venit în joc: {name.upper()}")
 
     def set_difficulty(self, dif):
         self.info_widget.set_difficulty(dif)
@@ -151,7 +151,7 @@ class GamePlayWidget(QWidget):
         if tier == 1:
             self.info_widget.ships_alive["Corvete"] -= 1
         elif tier == 2:
-            self.info_widget.ships_alive["Canoniere"] -= 1
+            self.info_widget.ships_alive["Vânătoare"] -= 1
         elif tier == 3:
             self.info_widget.ships_alive["Fregate"] -= 1
         elif tier == 4:

@@ -122,12 +122,12 @@ class TerrainWidget(QWidget):
                 self.buttons[x + i][y].setIconSize(QSize(40,40))
 
         self.signal_decrese_count.emit(size)
-        self.parentWidget().addMessageToConsole.emit(f"Ship {self.selected_ship.name} of tier {self.selected_ship.size} was placed at ref position {x},{y}")
+        self.parentWidget().addMessageToConsole.emit(f"O nava de tip {self.selected_ship.name} de nivel {self.selected_ship.size} a fost plasată la poziția {x},{y}")
 
 
     def place_ability(self):
         x, y = self.selected_ability.refX, self.selected_ability.refY
-        print(f"Placed_ability on {x},{y}")
+        print(f"O abilitate a fost plasată la poziția {x},{y}")
 
         if self.selected_ability.id == 1:
             self.place_bomb(x, y)
@@ -212,7 +212,7 @@ class TerrainWidget(QWidget):
             self.parentWidget().setCursor(Qt.ArrowCursor)
 
         if count == 0:
-            self.parentWidget().addMessageToConsole.emit(f"All ships of tier {ship.size} have been placed.")
+            self.parentWidget().addMessageToConsole.emit(f"Toate navele de nivel {ship.size} au fost plasate în teren.")
             return False
 
         # check for not covering other ships already placed
@@ -226,14 +226,14 @@ class TerrainWidget(QWidget):
                 return False
             for i in range(size):
                 if self.buttons[row][col + i].property("isShipPlaced") == "yes" :
-                    self.parentWidget().addMessageToConsole.emit(f"Collision with other ship at {row},{col+i}")
+                    self.parentWidget().addMessageToConsole.emit(f"A apărut o coliziune cu altă navă la poziția {row},{col+i}")
                     return False
         else:
             if row + size - 1 >= self.squares:
                 return False
             for i in range(size - 1):
                 if self.buttons[row + i][col].property("isShipPlaced") == "yes":
-                    self.parentWidget().self.addMessageToConsole.emit(f"Collision with other ship at {row+i},{col}")
+                    self.parentWidget().self.addMessageToConsole.emit(f"A apărut o coliziune cu altă navă la poziția {row+i},{col}")
                     return False
 
         return True
@@ -259,7 +259,7 @@ class UserTerrainWidget(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
 
-        user_label = QLabel("Your Terrain   ", self)
+        user_label = QLabel("Terenul tău ", self)
         user_label.setObjectName("userLabel")
         user_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(user_label)
@@ -268,7 +268,7 @@ class UserTerrainWidget(QWidget):
         layout.addWidget(self.terrain_widget)
         self.terrain_widget.signal_decrese_count.connect(self.decrease_count)
 
-        navy_label = QLabel("Select a navy to deploy", self)
+        navy_label = QLabel("Selectează nava pe care dorești să o poziționezi.", self)
         navy_label.setAlignment(Qt.AlignLeft)
         layout.addWidget(navy_label)
 
@@ -310,7 +310,7 @@ class UserTerrainWidget(QWidget):
             self.all_ships_placed = True
             self.setCursor(Qt.ArrowCursor)
             self.signal_all_ships_placed.emit()
-            self.addMessageToConsole.emit("All ships have been placed.")
+            self.addMessageToConsole.emit("Toate navele au fost plasate în teren.")
 
     def decrease_count(self, size:int):
         if size == 1:
@@ -349,7 +349,7 @@ class EnemyTerrainWidget(QWidget):
     def init_ui(self):
         layout = QVBoxLayout(self)
 
-        enemy_label = QLabel("Enemy Terrain", self)
+        enemy_label = QLabel("Terenul inamic", self)
         enemy_label.setObjectName("enemyLabel")
         enemy_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(enemy_label)
@@ -358,7 +358,7 @@ class EnemyTerrainWidget(QWidget):
         layout.addWidget(self.terrain_widget)
         self.terrain_widget.signal_decrese_count.connect(self.decrease_count)
 
-        action_label = QLabel("Select an action", self)
+        action_label = QLabel("Selectează o acțiune", self)
         action_label.setAlignment(Qt.AlignLeft)
         layout.addWidget(action_label)
 
