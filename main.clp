@@ -15,16 +15,6 @@
     ; (Sistem asteapta)
     (Sistem decide)
 
-    ; (Teren T1 pozitia 2 3 este atacata)
-    (Nava N2 nu este distrusa)
-    (Nava N3 nu este distrusa)
-
-    (Nava N2 in terenul T1)
-    (Nava N3 in terenul T1)   
-
-    (Nava orizontala N2 rand 2 pe coloanele 1 2 3 4)
-    (Nava verticala N3 coloana 1 pe randurile 3 4) 
-
     (global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
     (update_map Yes) ; folosit pt actualizarea hartii
 	(dificultate 3)  ;folosit pentru calculul frontierei
@@ -142,12 +132,13 @@
     (retract ?atac)
 )
 
-;;; FRONTIER CALCULATION 
 
-(defrule Calculul_frontierei (declare (salience 3))
-	?calcul <- (calcul_frontiera ?rand ?coloana)
+;;; FRONTIER CALCULATION
+(defrule Calculul_frontierei
+    (declare (salience 3))
 	(dificultate ?dificultate)
-	=>	
+	?calcul <- (calcul_frontiera ?rand ?coloana)
+	=>
 	(if (< (- ?rand (- 4 ?dificultate)) 1) then
 	(bind ?*x0* 1)
 	else
@@ -182,8 +173,8 @@
 	(bind ?*nr_atacuri_frontiera* 0)
 )
 
-;;; SYSTEM RANDOM ATTACK USING FRONTIER - WORK IN PROGRESS
 
+;;; SYSTEM RANDOM ATTACK USING FRONTIER - WORK IN PROGRESS
 (defrule Sistem_ataca_frontiera (declare (salience 1))
 	?front<-(frontiera ?x0 ?y0 ?x1 ?y1)
 	(or
@@ -415,6 +406,8 @@
 	(retract ?Delete1)
 	(retract ?Delete2)
 )
+
+
 ;;; FILES OPERATIONS
 (defrule Rule_Opening_File_Read
 	(declare (salience 100))
@@ -598,4 +591,3 @@
 		
 	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
 )
-

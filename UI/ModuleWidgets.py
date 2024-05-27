@@ -143,7 +143,6 @@ class GamePlayWidget(QWidget):
 
     def deactivate_enemy_terrain(self):
         self.enemy_widget.blockSignals(True)
-        print("Semnal emis de la GamePlayWidget")
         self.signal_update_clips_map_request.emit(self.user_widget.terrain_widget.data)
 
 

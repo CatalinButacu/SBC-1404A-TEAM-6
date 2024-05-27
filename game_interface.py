@@ -8,13 +8,15 @@ Created on Fri Apr 19 11:14:16 2024
 # LIBS DEPENDENCIES
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, QTimer
 
 # LOCAL WIDGETS
 from UI.ModuleWidgets import StartGameWidget, GamePlayWidget, EndGameWidget
-from UI.DataCollector import GameState
+from UI.DataCollector import GameState, MapState
 
 # CLIPS ENV
+from game_engine import init_sistem_env, write_matrix_to_file 
+from game_engine import get_clips_state, get_all_facts_list, get_agenda_list
 from game_engine import execute_update_file_map_using_matrix
 from game_engine import execute_update_matrix_using_file_map
 
@@ -23,16 +25,21 @@ class BattleshipUI(QMainWindow):
         super().__init__()
         print("BattleshipUI created...")
         self.state = GameState.LOADING
-        self.setWindowTitle("Battleship Game SBC")
-        self.setFixedSize(980, 820)
-        self.center_window()
+        self.init_window()
         self.scene_start = None
         self.scene_play = None
         self.scene_stop = None
-        #self.end_game("lose")
         self.launch_game()
-        self.raise_()
+
+    def init_window(self):
+        self.setWindowTitle("Battleship Game SBC")
+        self.setFixedSize(980, 820)
+        self.center_window()
         self.activateWindow()
+        self.raise_()
+        self.timer = QTimer()
+        self.timer.setInterval(1000)
+        self.wait_responses = 10
 
     def center_window(self):
         screen_geometry = QCoreApplication.instance().desktop().screenGeometry()
@@ -45,17 +52,48 @@ class BattleshipUI(QMainWindow):
         self.scene_play = GamePlayWidget()
         self.setCentralWidget(self.scene_start)
         self.connect_signals()
+        init_sistem_env()
+        self.isFirstTime = True
+
 
     def connect_signals(self):
         self.scene_start.signal_start_game.connect(self.start_game)
         self.scene_start.signal_name_changed.connect(self.scene_play.set_username)
         self.scene_start.signal_level_changed.connect(self.scene_play.set_difficulty)
         self.scene_start.signal_change_state.connect(self.update_state)
-        self.scene_play.signal_update_clips_map_request.connect(self.update_clips_map)
+        self.scene_play.signal_update_clips_map_request.connect(self.update_into_clips_map)
+        self.timer.timeout.connect(self.update_from_clips_map)
 
-    def update_clips_map(self, matrix:dict):
+    def update_into_clips_map(self, matrix:dict):
         execute_update_file_map_using_matrix(matrix)
-        print("Semnal ajuns la BattleshipUI")
+        self.timer.start()
+        if self.isFirstTime == True:
+            write_matrix_to_file("map_start.txt", matrix)
+
+        self.isFirstTime = False
+
+    def update_from_clips_map(self):
+        wait_user_input = get_clips_state()
+        if wait_user_input:
+            print("Matrice sistem actualizata")
+            matrix = execute_update_matrix_using_file_map()
+            self.scene_play.user_widget.update_map_from_file(matrix)
+            self.timer.stop()
+        else:
+            print("\n\nWaiting for Expert System to respond...")
+            self.wait_responses -= 1
+            if self.wait_responses == 0:
+                self.timer.stop()
+            else:
+                print("\n## FACTS:")
+                facts = get_all_facts_list()
+                for f in facts:
+                    print(f)
+
+                print("\n## AGENDA:")
+                facts = get_agenda_list()
+                for f in facts:
+                    print(f)
 
 
 
@@ -80,10 +118,17 @@ class BattleshipUI(QMainWindow):
     def update_state(self, state):
         self.state = state
 
-    def update_map(self, isUser=False):
-        path = "map_user.txt" if isUser else "map_system.txt"
-        with open(path, "r+"):
-            pass
+    def check_ships_still_alive(self):
+        user_data = self.scene_play.user_widget.terrain_widget.data
+        sistem_data = self.scene_play.enemy_widget.terrain_widget.data
+
+        ships_user = sum(row.count(MapState.SHIP_PLACED) for row in user_data["state"])
+        ships_sistem = sum(row.count(MapState.SHIP_PLACED) for row in sistem_data["state"])
+
+        if ships_user == 0:
+            self.end_game("LOSE")
+        elif ships_sistem == 0:
+            self.end_game("WIN")
 
 
 

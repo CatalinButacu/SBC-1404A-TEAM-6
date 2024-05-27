@@ -35,16 +35,29 @@ def execute_update_map():
 def execute_update_file_map_using_matrix(matrix:dict):
     filename = "map_parcurs.txt"
     write_matrix_to_file(filename, matrix)
-    print("semnal ajuns in GameEngine")
-    print(matrix['state'])
-    print(matrix['ids'])
+    execute_update_map()
+    set_state_of_sistem(1)
+    execute_update_map()
+    env.run()
 
-def execute_update_matrix_using_file_map(filename=""):
-    pass
+def execute_update_matrix_using_file_map():
+    filename = "map_parcurs.txt"
+    set_state_of_sistem(0)
+    return read_and_transform_matrix(filename)
 
 # GETTERS
 def get_all_facts_list():
     return env.eval("(get-fact-list *)")
+
+def get_clips_state():
+    facts = get_all_facts_list()
+    for fact in facts:
+        if "(Sistem asteapta)" in str(fact):
+            return True
+    return False
+
+def get_agenda_list():
+    return env.activations()
 
 
 # SETTERS
@@ -83,13 +96,6 @@ def write_matrices_to_file(filename, matrix):
         file.write('\n')
         for row in matrix_ids:
             file.write(' '.join(map(str, row)) + '\n')
-
-
-def update_app_matrix_with_file_matrix(filename, matrix_app):
-    # Read the matrices from the file
-    matrix = read_matrices_from_file(filename)
-    matrix_app = matrix
-    return matrix_app
 
 def print_matrices(matrix):
     matrix_state = matrix["state"]
@@ -134,6 +140,13 @@ def read_and_transform_matrix(filename):
             matrix_ids.append(row_ids)
     return {"state": matrix_state, "ids": matrix_ids}
 
+def execute_update_file_map_using_matrix(matrix:dict):
+    filename = "map_parcurs.txt"
+    write_matrix_to_file(filename, matrix)
+    set_state_of_sistem(1)
+    execute_update_map()
+    env.run()
+
 def write_matrix_to_file(filename, matrix):
     with open(filename, 'w') as file:
         state_matrix = matrix["state"]
@@ -155,6 +168,11 @@ def write_matrix_to_file(filename, matrix):
 # LOCAL MAIN
 if __name__ == "__main__":
     init_sistem_env()
-    set_state_of_sistem(SISTEM_ASTEAPTA)
+    set_state_of_sistem(SISTEM_DECIDE)
     all_facts = get_all_facts_list()
     print_all_facts()
+
+    print("\n### AGENDA's ACTIVATIONS")
+    for activation in env.activations():
+        act = activation.name
+        print(f"Activation: {act}")

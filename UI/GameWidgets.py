@@ -274,10 +274,10 @@ class UserTerrainWidget(QWidget):
 
         button_layout = QHBoxLayout()
 
-        self.buttonT1 = ShipPlacementButton(tier=1, count=4, parent=self)
-        self.buttonT2 = ShipPlacementButton(tier=2, count=3, parent=self)
-        self.buttonT3 = ShipPlacementButton(tier=3, count=2, parent=self)
-        self.buttonT4 = ShipPlacementButton(tier=4, count=1, parent=self)
+        self.buttonT1 = ShipPlacementButton(tier=1, count=1, parent=self)
+        self.buttonT2 = ShipPlacementButton(tier=2, count=0, parent=self)
+        self.buttonT3 = ShipPlacementButton(tier=3, count=0, parent=self)
+        self.buttonT4 = ShipPlacementButton(tier=4, count=0, parent=self)
 
         self.buttonT1.setObjectName("placeNavyTier1")
         self.buttonT2.setObjectName("placeNavyTier2")
@@ -323,13 +323,45 @@ class UserTerrainWidget(QWidget):
             self.buttonT4.decrease_count()
 
     def mouseReleaseEvent(self, event):
-        self.check_ships_left()
+        if self.all_ships_placed == False:
+            self.check_ships_left()
+
+        print("TAST: Check for enemy atacks")
+        self.update_ui_at_index(0,0,3)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_R and self.terrain_widget.selected_ship:
             self.terrain_widget.selected_ship.rotate()
             width, height = self.terrain_widget.selected_ship.get_size_px()
             self.setCursor(QCursor(QPixmap(self.terrain_widget.selected_ship.image_path).scaled(width, height), -1, -1))
+
+    def get_changed_indices(old_matrix, new_matrix):
+        changes = []
+        old_state = old_matrix["state"]
+        new_state = new_matrix["state"]
+        
+        for i in range(len(old_state)):
+            for j in range(len(old_state[i])):
+                if old_state[i][j] != new_state[i][j]:
+                    changes.append((i, j))
+        
+        return changes
+
+    def update_map_from_file(self, matrix:dict):
+        changes = get_changed_indices(self.terrain_widget.data, matrix)
+
+        for i, j in changes:
+            self.update_ui_at_index(i, j, matrix["state"][i][j])
+
+        self.terrain_widget.data = matrix
+
+    def update_ui_at_index(self, i, j, new_state):
+        if new_state == MapState.SHIP_ATTACKED:
+            self.terrain_widget.buttons[i][j].setStyleSheet("color: yellow; font-size: 30px; font-weight: bold;")
+            self.terrain_widget.buttons[i][j].setText("X")
+        elif new_state == MapState.SPACE_ATTACKED:
+            self.terrain_widget.buttons[i][j].setStyleSheet("color: gray;")
+            self.terrain_widget.buttons[i][j].setText("X")
 
 
 """
@@ -442,8 +474,6 @@ class EnemyTerrainWidget(QWidget):
         elif id_ability == 3:
             self.line_assault_button.decrease_count()
 
-        print(self.terrain_widget.data["state"])
-        print(self.terrain_widget.data["ids"])
 
 
 def load_styles_from_file(root, file_path):
