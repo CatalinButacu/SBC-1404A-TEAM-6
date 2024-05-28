@@ -21,6 +21,10 @@
     (Nava N8 in terenul T1)   
 	(Nava N9 in terenul T1)
     (Nava N10 in terenul T1)
+    (Nava N1112 in terenul T1)
+	
+	(Nava N2 nu este distrusa)
+	(Nava N3 nu este distrusa)
 
     ; Contor de stare pt Sistem: ia decizii sau asteapta input client 
     ; (Sistem asteapta)
@@ -45,6 +49,9 @@
 	?*nr_atacuri_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
     ?*calcul_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
 	?*isDebugging* = 1 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
+	?*nr_atacuri_random* = 0 ;folosit pentru tipul 1 de atac
+	?*tip_atac* = 0
+	?*isDebugging* = 0 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
 )
 
 
@@ -98,7 +105,18 @@
     =>
     (retract ?atac ?status_nava)
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
-	(bind ?*hit* 1)
+	(assert (update_map_now))
+	(assert (switch_stare_sistem))
+)
+
+(defrule Actualizare_Nava_atacata_B_Sistem_frontiera (declare (salience 2))
+    ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+    (Nava ?nava in terenul ?Teren)
+	?front<-(frontiera $?)
+    =>
+    (retract ?atac ?status_nava ?front)
+    (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 	(assert (update_map_now))
 	(assert (switch_stare_sistem))
 )
@@ -115,6 +133,7 @@
     (assert (Sistem ataca pozitia ?rand ?*coloana_atac_linie* din terenul ?Teren cu B ))
     (bind ?*coloana_atac_linie* 1)
     (retract ?atac)
+	(bind ?*nr_atacuri_random* 0)
 )
 
 (defrule Atac_linie_jucator (declare (salience 10))
@@ -145,6 +164,7 @@
     =>
     (if (eq ?*isDebugging* 1) then (printout t "Exista o nava in zona scanata" crlf))
     (retract ?atac)
+	(bind ?*nr_atacuri_random* 0)
 )
 
 
@@ -209,9 +229,9 @@
 		(bind ?*calcul_frontiera* 0)
 	)
 	
-	(if (eq ?*hit* 1) then
-		(retract ?front)
-	)
+	; (if (eq ?*hit* 1) then
+		; (retract ?front)
+	; )
 )
 
 ;;; SEARCH ALGO RULES
@@ -581,13 +601,17 @@
 
 (defrule Sistem_Jucator_Switch
     (declare (salience -1))
-	(switch_stare_sistem)
-	?Del <-(Sistem decide)
+	?stare <-(switch_stare_sistem)
+	?Del <-(Sistem ?tip)
 	=>
-	(retract ?Del)
-	(assert (Sistem asteapta))
-
+	(if (eq ?tip decide) then
+		(assert (Sistem asteapta))
+	else
+		(assert (Sistem decide))
+	)
+	(retract ?Del ?stare)
 )
+
 
 (defrule dummy_atac
     (not (Teren $? este atacata))
@@ -596,3 +620,30 @@
     (bind ?y (random 0 9))
     (assert (Sistem ataca pozitia ?x ?y din terenul T1 cu B))
 )
+
+;mai trebuie facute teste
+(defrule Mod_atac_sistem (declare (salience 1))
+	(Sistem decide)
+	=>
+	(if (< ?*nr_atacuri_random* 3) then
+		(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu B))
+		(bind ?*nr_atacuri_random* (+ ?*nr_atacuri_random* 1))
+	else
+		(bind ?*tip_atac* (random 2 3))
+		(if (eq ?*tip_atac* 2) then
+			(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu AL))
+		else
+			(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu S))
+		)
+	)
+)
+
+;folosit doar pt debug
+; (defrule switch_sistem
+	; (declare (salience -2))
+	; (schimb sistem)
+	; ?Del <-(Sistem asteapta)
+	; =>
+	; (retract ?Del)
+	; (assert (Sistem decide))
+; )
