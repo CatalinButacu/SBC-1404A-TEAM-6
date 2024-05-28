@@ -10,6 +10,18 @@
     ; Notite structura aplicatie
     ; T1 - client
     ; T2 - sistem expert
+	
+	(Nava N1 in terenul T1)
+    (Nava N2 in terenul T1)
+	(Nava N3 in terenul T1)
+    (Nava N4 in terenul T1)   
+	(Nava N5 in terenul T1)
+    (Nava N6 in terenul T1)   
+	(Nava N7 in terenul T1)
+    (Nava N8 in terenul T1)   
+	(Nava N9 in terenul T1)
+    (Nava N10 in terenul T1)
+    (Nava N1112 in terenul T1)   	   	
 
     ; Contor de stare pt Sistem: ia decizii sau asteapta input client 
     ; (Sistem asteapta)
@@ -469,39 +481,6 @@
 	(close map_parcurs)
 	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
 	(retract ?Delete)
-)
-
-
-
-(defrule Rule_Writing_In_Map_Simple
-    (declare (salience 96))
-	?Delete1 <-(update_map Yes)
-	?Delete2 <-(global_var ?row ?col)
-	(Teren T1 pozitia ?row ?col este ?check)
-    =>
-	(if (<= ?row ?*nr_linii*)
-		then 
-
-			(printout map_parcurs ?check " " )
-			
-			
-			
-			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
-	)
-)
-
-(defrule Rule_Opening_File_Write
-	(declare (salience 97))
-    =>
-	(open map_parcurs.txt map_parcurs "w")
-	(if (eq ?*isDebugging* 1) then (printout t "Putem scrie in map.txt" crlf))
-)
-
-(defrule Rule_Closing_File_Write
-	(declare (salience 95))
-	=>
-	(close map_parcurs)
-	(if (eq ?*isDebugging* 1) then (printout t "Fisierele au fost inchise" crlf))
 )
 
 
