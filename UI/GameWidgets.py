@@ -274,10 +274,10 @@ class UserTerrainWidget(QWidget):
 
         button_layout = QHBoxLayout()
 
-        self.buttonT1 = ShipPlacementButton(tier=1, count=1, parent=self)
-        self.buttonT2 = ShipPlacementButton(tier=2, count=0, parent=self)
-        self.buttonT3 = ShipPlacementButton(tier=3, count=0, parent=self)
-        self.buttonT4 = ShipPlacementButton(tier=4, count=0, parent=self)
+        self.buttonT1 = ShipPlacementButton(tier=1, count=4, parent=self)
+        self.buttonT2 = ShipPlacementButton(tier=2, count=3, parent=self)
+        self.buttonT3 = ShipPlacementButton(tier=3, count=2, parent=self)
+        self.buttonT4 = ShipPlacementButton(tier=4, count=1, parent=self)
 
         self.buttonT1.setObjectName("placeNavyTier1")
         self.buttonT2.setObjectName("placeNavyTier2")
