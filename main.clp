@@ -57,6 +57,7 @@
     (retract ?atac ?status_teren)
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 	(assert (update_map_now))
+	(assert (switch_stare_sistem))
 )
 
 (defrule Actualizare_Teren_atacat_B_Sistem (declare (salience 2))
@@ -67,6 +68,7 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este atacata))
 	(assert (update_map_now))
 	(bind ?*calcul_frontiera* 1)
+	(assert (switch_stare_sistem))
 )
 
 (defrule Stergere_atacuri_nefolosite (declare (salience 2))
@@ -87,6 +89,7 @@
     (retract ?atac ?status_nava)
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 	(assert (update_map_now))
+	(assert (switch_stare_sistem))
 )
 
 (defrule Actualizare_Nava_atacata_B_Sistem (declare (salience 2))
@@ -98,6 +101,7 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 	(bind ?*hit* 1)
 	(assert (update_map_now))
+	(assert (switch_stare_sistem))
 )
 
 ;;; DIRECT ATTACK RULES
@@ -574,3 +578,14 @@
 	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
 )
 
+
+
+(defrule Sistem_Jucator_Switch
+    (declare (salience -1))
+	(switch_stare_sistem)
+	?Del <-(Sistem decide)
+	=>
+	(retract ?Del)
+	(assert (Sistem asteapta))
+
+)
