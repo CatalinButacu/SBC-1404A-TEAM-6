@@ -79,21 +79,8 @@ class BattleshipUI(QMainWindow):
             matrix = execute_update_matrix_using_file_map()
             self.scene_play.user_widget.update_map_from_file(matrix)
             self.timer.stop()
-        else:
-            print("\n\nWaiting for Expert System to respond...")
-            self.wait_responses -= 1
-            if self.wait_responses == 0:
-                self.timer.stop()
-            else:
-                print("\n## FACTS:")
-                facts = get_all_facts_list()
-                for f in facts:
-                    print(f)
 
-                print("\n## AGENDA:")
-                facts = get_agenda_list()
-                for f in facts:
-                    print(f)
+        print("\n\nWaiting for Expert System to respond...")
 
 
 

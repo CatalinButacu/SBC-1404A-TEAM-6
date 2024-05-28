@@ -12,6 +12,7 @@ import numpy as np
 from PyQt5.QtCore import Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QWidget, QLabel, QPushButton, QGridLayout, QHBoxLayout
 from PyQt5.QtGui import QPixmap, QIcon, QCursor
+from PyQt5.QtGui import QPainter, QBrush, QColor, QFont
 
 from UI.DataCollector import *
 from UI.UI_Elements import ShipPlacementButton, AbilityPlacementButtons
@@ -239,7 +240,6 @@ class TerrainWidget(QWidget):
         return True
 
 
-
 """
     UserTerrainWidget - BASIC Widget
     > init UI subcomponents and ensure communication between widgets
@@ -327,7 +327,7 @@ class UserTerrainWidget(QWidget):
             self.check_ships_left()
 
         print("TAST: Check for enemy atacks")
-        self.update_ui_at_index(0,0,3)
+
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_R and self.terrain_widget.selected_ship:
@@ -349,7 +349,6 @@ class UserTerrainWidget(QWidget):
 
     def update_map_from_file(self, matrix:dict):
         changes = get_changed_indices(self.terrain_widget.data, matrix)
-
         for i, j in changes:
             self.update_ui_at_index(i, j, matrix["state"][i][j])
 
@@ -357,11 +356,13 @@ class UserTerrainWidget(QWidget):
 
     def update_ui_at_index(self, i, j, new_state):
         if new_state == MapState.SHIP_ATTACKED:
-            self.terrain_widget.buttons[i][j].setStyleSheet("color: yellow; font-size: 30px; font-weight: bold;")
+            self.terrain_widget.buttons[i][j].setStyleSheet("color: red; font-size: 30px; font-weight: bold;")
             self.terrain_widget.buttons[i][j].setText("X")
+            self.terrain_widget.buttons[i][j].setDisabled(True)
         elif new_state == MapState.SPACE_ATTACKED:
             self.terrain_widget.buttons[i][j].setStyleSheet("color: gray;")
             self.terrain_widget.buttons[i][j].setText("X")
+            self.terrain_widget.buttons[i][j].setDisabled(True)
 
 
 """
@@ -375,8 +376,6 @@ class EnemyTerrainWidget(QWidget):
         super().__init__(parent)
         self.setObjectName("EnemyTerrainWidget")
         self.init_ui()
-        self.terrain_widget.data["ids"][1][1] = 1
-        self.terrain_widget.data["ids"][1][2] = 1
 
     def init_ui(self):
         layout = QVBoxLayout(self)
