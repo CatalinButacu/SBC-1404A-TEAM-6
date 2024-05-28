@@ -20,7 +20,7 @@ def init_sistem_env(file_name:str="main.clp"):
     env.clear()
     env.load(file_name)
     env.reset()
-    env.run()
+    #env.run()
 
 
 # EXECUTERS
@@ -74,8 +74,13 @@ def set_state_of_sistem(decisional_state:int = 0): # 0 - Sistem asteapta, 1 - Si
 # DISPLAY
 def print_all_facts():
     print('######### Afisarea bazei de fapte #########')
-    for fact in all_facts:
+    for fact in env.facts():
         print(fact)
+
+def print_all_agenda():
+    print("\n### AGENDA's ACTIVATIONS")
+    for activation in env.activations():
+        print(activation)
 
 # READ / WRITE MAP
 def read_matrices_from_file(filename):
@@ -83,6 +88,7 @@ def read_matrices_from_file(filename):
         content = file.read().strip().split('\n\n')
         matrix_state = [list(map(int, line.split())) for line in content[0].strip().split('\n')]
         matrix_ids = [list(map(int, line.split())) for line in content[1].strip().split('\n')]
+        file.close()
     return {"state": matrix_state, "ids": matrix_ids}
 
 
@@ -90,12 +96,13 @@ def write_matrices_to_file(filename, matrix):
     matrix_state = matrix["state"]
     matrix_ids = matrix["ids"]
 
-    with open(filename, 'w') as file:
+    with open(filename, 'r+') as file:
         for row in matrix_state:
             file.write(' '.join(map(str, row)) + '\n')
         file.write('\n')
         for row in matrix_ids:
             file.write(' '.join(map(str, row)) + '\n')
+        file.close()
 
 def print_matrices(matrix):
     matrix_state = matrix["state"]
@@ -138,6 +145,7 @@ def read_and_transform_matrix(filename):
                     row_ids.append(int(item))
             matrix_state.append(row_state)
             matrix_ids.append(row_ids)
+        file.close()
     return {"state": matrix_state, "ids": matrix_ids}
 
 def execute_update_file_map_using_matrix(matrix:dict):
@@ -148,7 +156,7 @@ def execute_update_file_map_using_matrix(matrix:dict):
     env.run()
 
 def write_matrix_to_file(filename, matrix):
-    with open(filename, 'w') as file:
+    with open(filename, 'r+') as file:
         state_matrix = matrix["state"]
         ids_matrix = matrix["ids"]
         for state_row, ids_row in zip(state_matrix, ids_matrix):
@@ -163,6 +171,7 @@ def write_matrix_to_file(filename, matrix):
                 elif state == 3:
                     row_items.append(f"N{id_}_a")
             file.write(' '.join(row_items) + '\n')
+        file.close()
 
 
 # LOCAL MAIN
@@ -171,8 +180,4 @@ if __name__ == "__main__":
     set_state_of_sistem(SISTEM_DECIDE)
     all_facts = get_all_facts_list()
     print_all_facts()
-
-    print("\n### AGENDA's ACTIVATIONS")
-    for activation in env.activations():
-        act = activation.name
-        print(f"Activation: {act}")
+    print_all_agenda()

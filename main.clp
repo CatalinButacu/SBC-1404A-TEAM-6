@@ -21,7 +21,6 @@
     (Nava N8 in terenul T1)   
 	(Nava N9 in terenul T1)
     (Nava N10 in terenul T1)
-    (Nava N1112 in terenul T1)   	   	
 
     ; Contor de stare pt Sistem: ia decizii sau asteapta input client 
     ; (Sistem asteapta)
@@ -45,7 +44,7 @@
 	?*hit* = 0 ;folosit pentru a opri atacurile random de pe frontiera atunci cand a fost lovita o nava
 	?*nr_atacuri_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
     ?*calcul_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
-	?*isDebugging* = 0 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
+	?*isDebugging* = 1 ; just change to 1 to activate prints / to 0 to deactivate prints from operations
 )
 
 
@@ -588,4 +587,12 @@
 	(retract ?Del)
 	(assert (Sistem asteapta))
 
+)
+
+(defrule dummy_atac
+    (not (Teren $? este atacata))
+    =>
+    (bind ?x (random 0 9))
+    (bind ?y (random 0 9))
+    (assert (Sistem ataca pozitia ?x ?y din terenul T1 cu B))
 )

@@ -15,6 +15,7 @@ from UI.ModuleWidgets import StartGameWidget, GamePlayWidget, EndGameWidget
 from UI.DataCollector import GameState, MapState
 
 # CLIPS ENV
+import clips
 from game_engine import init_sistem_env, write_matrix_to_file 
 from game_engine import get_clips_state, get_all_facts_list, get_agenda_list
 from game_engine import execute_update_file_map_using_matrix
@@ -80,7 +81,11 @@ class BattleshipUI(QMainWindow):
             self.scene_play.user_widget.update_map_from_file(matrix)
             self.timer.stop()
 
-        print("\n\nWaiting for Expert System to respond...")
+        self.wait_responses -= 1
+        if self.wait_responses != 0:
+            print("\n\nWaiting for Expert System to respond...")
+        else:
+            print("\n\nExpert System failed to respond...")
 
 
 
