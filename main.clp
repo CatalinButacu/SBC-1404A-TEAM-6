@@ -506,26 +506,29 @@
 
 
 
-(defrule Rule_Writing_In_Map
+
+
+(defrule Rule_Writing_In_Map_Simple
     (declare (salience 96))
 	?Delete1 <-(update_map Yes)
 	?Delete2 <-(global_var ?row ?col)
-	(or (Teren T1 pozitia ?row ?col este ocupata de nava ?check si este ?atacat_sau_nu)
-		(Teren T1 pozitia ?row ?col este ?check)
-	)
+	(Teren T1 pozitia ?row ?col este ?check)
     =>
 	(if (<= ?row ?*nr_linii*)
 		then 
-			(printout map_parcurs ?check " " )
-			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
 
+			(printout map_parcurs ?check " " )
+			
+			
+			
+			(if (eq ?*isDebugging* 1) then (printout t  ?row ?col ?check crlf))
 			
 			(if (< ?col ?*nr_coloane*)
 				then
 					(assert (global_var ?row (+ ?col 1)))
-					(retract ?Delete1)
+				;	(retract ?Delete1)
 					(retract ?Delete2)
-					(assert (rule_writing_in_map 2))
+	;				(assert (rule_writing_in_map 2))
 				else
 					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
 					(retract ?Delete2)
@@ -568,9 +571,9 @@
 			(if (< ?col ?*nr_coloane*)
 				then
 					(assert (global_var ?row (+ ?col 1)))
-					(retract ?Delete1)
+				;	(retract ?Delete1)
 					(retract ?Delete2)
-					(assert (rule_writing_in_map 2))
+	;				(assert (rule_writing_in_map 2))
 				else
 					(if (eq ?*isDebugging* 1) then (printout t  "else" crlf))
 					(retract ?Delete2)
@@ -591,3 +594,4 @@
 		
 	(if (eq ?*isDebugging* 1) then (printout t " am actualizat o pozitie" crlf))
 )
+
