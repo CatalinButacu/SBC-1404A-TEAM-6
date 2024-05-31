@@ -17,7 +17,7 @@ from UI.DataCollector import GameState, MapState
 # CLIPS ENV
 import clips
 from game_engine import init_sistem_env, write_matrix_to_file 
-from game_engine import get_clips_state, get_all_facts_list, get_agenda_list
+from game_engine import get_clips_state
 from game_engine import execute_update_file_map_using_matrix
 from game_engine import execute_update_matrix_using_file_map
 
@@ -83,9 +83,14 @@ class BattleshipUI(QMainWindow):
 
         self.wait_responses -= 1
         if self.wait_responses != 0:
-            print("\n\nWaiting for Expert System to respond...")
+            print("\n\nWaiting for Expert System to respond...\n")
+            print('######### Afisarea bazei de fapte #########')
+            for fact in clips.Environment().facts():
+                print(fact)
+
         else:
             print("\n\nExpert System failed to respond...")
+            self.timer.stop()
 
 
 

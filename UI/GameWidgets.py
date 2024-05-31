@@ -84,8 +84,11 @@ class TerrainWidget(QWidget):
 
         # check for user terrain
         if self.parentWidget().objectName() == "UserTerrainWidget":
-            self.parentWidget().check_ships_left()
-            if self.parentWidget().all_ships_placed:
+            parent = self.parentWidget()
+            if parent.all_ships_placed == False:
+                parent.check_ships_left()
+
+            if parent.all_ships_placed:
                 print("All ships have been placed.")
                 return False
 
@@ -124,6 +127,11 @@ class TerrainWidget(QWidget):
 
         self.signal_decrese_count.emit(size)
         self.parentWidget().addMessageToConsole.emit(f"O nava de tip {self.selected_ship.name} de nivel {self.selected_ship.size} a fost plasată la poziția {x},{y}")
+        self.parentWidget().check_ships_left()
+
+        if self.parentWidget().all_ships_placed:
+            self.parentWidget().emit_ships_placed()
+            self.parentWidget().addMessageToConsole.emit("Toate navele au fost plasate în teren! ^-^")
 
 
     def place_ability(self):
@@ -148,7 +156,7 @@ class TerrainWidget(QWidget):
         button.setStyleSheet(new_style)
         button.setText("X")
         self.data["state"][x][y] = MapState.SPACE_ATTACKED.value if self.data["ids"][x][y]==0 else MapState.SHIP_ATTACKED.value
-
+        self.parentWidget().can_act = True if self.data["state"][x][y] == MapState.SHIP_ATTACKED.value else False
 
     def place_scan(self, x, y):
         info = InfoWidget.get_instance()
@@ -309,8 +317,6 @@ class UserTerrainWidget(QWidget):
         if sum_control == 0:
             self.all_ships_placed = True
             self.setCursor(Qt.ArrowCursor)
-            self.signal_all_ships_placed.emit()
-            self.addMessageToConsole.emit("Toate navele au fost plasate în teren.")
 
     def decrease_count(self, size:int):
         if size == 1:
@@ -322,11 +328,12 @@ class UserTerrainWidget(QWidget):
         elif size == 4:
             self.buttonT4.decrease_count()
 
+    def emit_ships_placed(self):
+        self.signal_all_ships_placed.emit()
+
     def mouseReleaseEvent(self, event):
         if self.all_ships_placed == False:
             self.check_ships_left()
-
-        print("TAST: Check for enemy atacks")
 
 
     def keyPressEvent(self, event):
@@ -348,7 +355,7 @@ class UserTerrainWidget(QWidget):
         return changes
 
     def update_map_from_file(self, matrix:dict):
-        changes = get_changed_indices(self.terrain_widget.data, matrix)
+        changes = self.get_changed_indices(self.terrain_widget.data, matrix)
         for i, j in changes:
             self.update_ui_at_index(i, j, matrix["state"][i][j])
 
@@ -375,6 +382,7 @@ class EnemyTerrainWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setObjectName("EnemyTerrainWidget")
+        self.can_act = True
         self.init_ui()
 
     def init_ui(self):
@@ -393,24 +401,24 @@ class EnemyTerrainWidget(QWidget):
         action_label.setAlignment(Qt.AlignLeft)
         layout.addWidget(action_label)
 
-        button_layout = QHBoxLayout()
+        self.button_layout = QHBoxLayout()
 
         self.bomb_button = AbilityPlacementButtons(1, 200, self)
         self.bomb_button.setObjectName("bombButton")
         self.bomb_button.signal_ability_selected.connect(self.drop_ability)
-        button_layout.addWidget(self.bomb_button)
+        self.button_layout.addWidget(self.bomb_button)
 
         self.scan_button = AbilityPlacementButtons(2, 1, self)
         self.scan_button.setObjectName("scanButton")
         self.scan_button.signal_ability_selected.connect(self.drop_ability)
-        button_layout.addWidget(self.scan_button)
+        self.button_layout.addWidget(self.scan_button)
 
         self.line_assault_button = AbilityPlacementButtons(3, 2,  self)
         self.line_assault_button.setObjectName("lineAssaultButton")
         self.line_assault_button.signal_ability_selected.connect(self.drop_ability)
-        button_layout.addWidget(self.line_assault_button)
+        self.button_layout.addWidget(self.line_assault_button)
 
-        layout.addLayout(button_layout)
+        layout.addLayout(self.button_layout)
 
         self.init_ships()
 
@@ -425,7 +433,7 @@ class EnemyTerrainWidget(QWidget):
                 self.place_ship_on_matrix(x, y, s, o, id_ship_to_place)
                 # print(self.terrain_widget.data["ids"])
             else:
-                print("Cannot place ship of size", size)
+                print("Cannot place ship of size", s)
 
     def select_random_ref_position(self, size):
         orientation = random.choice([Ship.HORIZONTAL, Ship.VERTICAL])
@@ -472,6 +480,11 @@ class EnemyTerrainWidget(QWidget):
             self.scan_button.decrease_count()
         elif id_ability == 3:
             self.line_assault_button.decrease_count()
+
+        if self.can_act == False:
+           self.bomb_button.setEnabled(False)
+           self.scan_button.setEnabled(False)
+           self.line_assault_button.setEnabled(False)
 
 
 

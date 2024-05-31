@@ -114,7 +114,7 @@ class GamePlayWidget(QWidget):
 
         self.info_widget.ships_alive = {
             "Corvete": self.user_widget.buttonT1.getCount(),
-            "Canoniere": self.user_widget.buttonT2.getCount(),
+            "Vanatoare": self.user_widget.buttonT2.getCount(),
             "Fregate": self.user_widget.buttonT3.getCount(),
             "Distrugatoare": self.user_widget.buttonT4.getCount()
         }
@@ -150,7 +150,7 @@ class GamePlayWidget(QWidget):
         if tier == 1:
             self.info_widget.ships_alive["Corvete"] -= 1
         elif tier == 2:
-            self.info_widget.ships_alive["Vânătoare"] -= 1
+            self.info_widget.ships_alive["Vanatoare"] -= 1
         elif tier == 3:
             self.info_widget.ships_alive["Fregate"] -= 1
         elif tier == 4:

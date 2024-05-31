@@ -80,7 +80,7 @@ class InfoWidget(QWidget):
         }
         self.ships_alive = {
             "Corvete": 0,
-            "Vânătoare": 0,
+            "Vanatoare": 0,
             "Fregate": 0,
             "Distrugatoare": 0
         }
@@ -155,7 +155,7 @@ class InfoWidget(QWidget):
     def update_info(self):
         txt = "Nave în viață: \t"
         txt += f"Corvete : {self.ships_alive['Corvete']}  --  "
-        txt += f"Vânătoare : {self.ships_alive['Vânătoare']}  --  "
+        txt += f"Vânătoare : {self.ships_alive['Vanatoare']}  --  "
         txt += f"Fregate : {self.ships_alive['Fregate']}  --  "
         txt += f"Distrugatoare : {self.ships_alive['Distrugatoare']} "
         self.info_text.setText(txt)
