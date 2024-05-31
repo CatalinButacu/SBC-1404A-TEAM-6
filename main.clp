@@ -29,6 +29,8 @@
     ; Contor de stare pt Sistem: ia decizii sau asteapta input client 
     ; (Sistem asteapta)
     (Sistem decide)
+	
+	(calcul_frontiera)
 
     (global_var 1 1) ; folosit pt actualizare live a variabilelor de scriere in map.txt
     (update_map Yes) ; folosit pt actualizarea hartii
@@ -45,6 +47,9 @@
 	?*x1* = 0
 	?*y0* = 0
 	?*y1* = 0
+	?*x_last_attack* = 0
+	?*y_last_attack* = 0
+	?*nr_atacuri_linie* = 0
 	?*hit* = 0 ;folosit pentru a opri atacurile random de pe frontiera atunci cand a fost lovita o nava
 	?*nr_atacuri_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
     ?*calcul_frontiera* = 0 ;folosit pentru a decide cand schimbam frontiera
@@ -75,16 +80,26 @@
 	(assert (update_map_now))
 	(bind ?*calcul_frontiera* 1)
 	(assert (switch_stare_sistem))
+	(bind ?*x_last_attack* ?rand)
+	(bind ?*y_last_attack* ?coloana)
 )
 
-(defrule Stergere_atacuri_nefolosite (declare (salience 2))
-	(or
-		?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-		?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-	)
+(defrule Stergere_atacuri_nefolosite_jucator (declare (salience 2))
+	?atac <-(Jucator ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
 	(Teren ?Teren pozitia ?rand ?coloana este $? atacata)
     =>
     (retract ?atac)
+	(assert (switch_stare_sistem))
+)
+
+(defrule Stergere_atacuri_nefolosite_sistem (declare (salience 2))
+	(frontiera ?x0 ?y0 ?x1 ?y1)
+	?atac <-(Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+	(Teren ?Teren pozitia ?rand ?coloana este $? atacata)
+    =>
+    (retract ?atac)
+	(assert (Sistem ataca pozitia (random ?x0 ?x1) (random ?y0 ?y1) din terenul T1 cu B))
+	;(assert (switch_stare_sistem))
 )
 
 (defrule Actualizare_Nava_atacata_B_jucator (declare (salience 1))
@@ -107,19 +122,21 @@
     (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
 	(assert (update_map_now))
 	(assert (switch_stare_sistem))
+	(bind ?*x_last_attack* ?rand)
+	(bind ?*y_last_attack* ?coloana)
 )
 
-(defrule Actualizare_Nava_atacata_B_Sistem_frontiera (declare (salience 2))
-    ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
-    ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
-    (Nava ?nava in terenul ?Teren)
-	?front<-(frontiera $?)
-    =>
-    (retract ?atac ?status_nava ?front)
-    (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
-	(assert (update_map_now))
-	(assert (switch_stare_sistem))
-)
+; (defrule Actualizare_Nava_atacata_B_Sistem_frontiera (declare (salience 2))
+    ; ?atac <- (Sistem ataca pozitia ?rand&:(and (>= ?rand 1) (<= ?rand ?*nr_linii*)) ?coloana&:(and (>= ?coloana 1) (<= ?coloana ?*nr_coloane*)) din terenul ?Teren cu B)
+    ; ?status_nava <- (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+    ; (Nava ?nava in terenul ?Teren)
+	; ?front<-(frontiera $?)
+    ; =>
+    ; (retract ?atac ?status_nava ?front)
+    ; (assert (Teren ?Teren pozitia ?rand ?coloana este ocupata de nava ?nava si este atacata))
+	; (assert (update_map_now))
+	; (assert (switch_stare_sistem))
+; )
 
 ;;; DIRECT ATTACK RULES
 (defrule Atac_linie_sistem (declare (salience 10))
@@ -169,6 +186,15 @@
 
 
 ;;; FRONTIER CALCULATION
+(defrule Initiere_calcul_frontiera (declare (salience 40))
+	?initiere <- (calcul_frontiera)
+	(Teren T1 pozitia ?rand ?coloana este ocupata de nava ?nava si este neatacata)
+	=>
+	(assert (calcul_frontiera ?rand ?coloana))
+	(retract ?initiere)
+	(bind ?*nr_atacuri_random* 0)
+)
+
 (defrule Calculul_frontierei
     (declare (salience 3))
 	(dificultate ?dificultate)
@@ -210,29 +236,29 @@
 
 
 ;;; SYSTEM RANDOM ATTACK USING FRONTIER - WORK IN PROGRESS
-(defrule Sistem_ataca_frontiera (declare (salience 1))
-	?front<-(frontiera ?x0 ?y0 ?x1 ?y1)
-	(or
-	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este liber)
-	(Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este ocupata $?)
-	)
-	=>
-	(if (and (eq ?*hit* 0) (< ?*nr_atacuri_frontiera* 4)) then
-		(assert (Sistem ataca pozitia ?rand ?coloana din terenul T1 cu B))
-		(bind ?*nr_atacuri_frontiera* (+ ?*nr_atacuri_frontiera* 1))
-		(bind ?*calcul_frontiera* 0)
-	)
-	
-	(if (and (eq ?*hit* 0) (>= ?*nr_atacuri_frontiera* 3) (eq ?*calcul_frontiera* 1)) then
-		(retract ?front)
-		(assert (calcul_frontiera ?rand ?coloana))
-		(bind ?*calcul_frontiera* 0)
-	)
-	
-	; (if (eq ?*hit* 1) then
-		; (retract ?front)
+; (defrule Sistem_ataca_frontiera (declare (salience 1))
+	; ?front<-(frontiera ?x0 ?y0 ?x1 ?y1)
+	; (or
+	; (Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este liber)
+	; (Teren T1 pozitia ?rand&:(and (>= ?rand ?x0) (<= ?rand ?x1)) ?coloana&:(and (>= ?coloana ?y0) (<= ?coloana ?y1)) este ocupata $?)
 	; )
-)
+	; =>
+	; (if (and (eq ?*hit* 0) (< ?*nr_atacuri_frontiera* 4)) then
+		; (assert (Sistem ataca pozitia ?rand ?coloana din terenul T1 cu B))
+		; (bind ?*nr_atacuri_frontiera* (+ ?*nr_atacuri_frontiera* 1))
+		; (bind ?*calcul_frontiera* 0)
+	; )
+	
+	; (if (and (eq ?*hit* 0) (>= ?*nr_atacuri_frontiera* 3) (eq ?*calcul_frontiera* 1)) then
+		; (retract ?front)
+		; (assert (calcul_frontiera ?rand ?coloana))
+		; (bind ?*calcul_frontiera* 0)
+	; )
+	
+	; ; (if (eq ?*hit* 1) then
+		; ; (retract ?front)
+	; ; )
+; )
 
 ;;; SEARCH ALGO RULES
 (defrule CruceSearch "Sistem has info for only ONE HIT and NOTHING MORE"
@@ -613,27 +639,35 @@
 )
 
 
-(defrule dummy_atac
-    (not (Teren $? este atacata))
-    =>
-    (bind ?x (random 0 9))
-    (bind ?y (random 0 9))
-    (assert (Sistem ataca pozitia ?x ?y din terenul T1 cu B))
-)
+; (defrule dummy_atac (declare )
+    ; (frontiera ?x0 ?y0 ?x1 ?y1)
+    ; =>
+    ; (bind ?x (random 0 9))
+    ; (bind ?y (random 0 9))
+    ; (assert (Sistem ataca pozitia ?x ?y din terenul T1 cu B))
+; )
 
 ;mai trebuie facute teste
 (defrule Mod_atac_sistem (declare (salience 1))
 	(Sistem decide)
+	?front <- (frontiera ?x0 ?y0 ?x1 ?y1)
 	=>
 	(if (< ?*nr_atacuri_random* 3) then
-		(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu B))
+		(assert (Sistem ataca pozitia (random ?x0 ?x1) (random ?y0 ?y1) din terenul T1 cu B))
 		(bind ?*nr_atacuri_random* (+ ?*nr_atacuri_random* 1))
 	else
 		(bind ?*tip_atac* (random 2 3))
 		(if (eq ?*tip_atac* 2) then
-			(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu AL))
+			(if (< ?*nr_atacuri_linie* 3) then
+				(assert (Sistem ataca pozitia (random ?x0 ?x1) (random ?y0 ?y1) din terenul T1 cu AL))
+				(bind ?*nr_atacuri_linie* (+ ?*nr_atacuri_linie* 1))
+			)
+			else
+			(retract ?front)
+			(assert (calcul_frontiera))
 		else
-			(assert (Sistem ataca pozitia (random 1 10) (random 1 10) din terenul T1 cu S))
+			(retract ?front)
+			(assert (calcul_frontiera))
 		)
 	)
 )
