@@ -1,11 +1,10 @@
+|                                                                                                                                            |                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| Universitatea Tehnică Gheorghe Asachi din Iași<br />Facultatea de Automatică și Calculatoare<br />Departamentul de Automatică și Informatică Aplicată  | **Proiect SBC**  |
 
-+-----------------------------------------------------+----------------+
-| Universitatea Tehnică Gheorghe Asachi din Iași      | **Proiect\     |
-|                                                     | SBC**          |
-| Facultatea de Automatică și Calculatoare            |                |
-|                                                     |                |
-| Departamentul de Automatică și Informatică Aplicată |                |
-+-----------------------------------------------------+----------------+
+@authors: Taradaciuc\_Nicolae, Vicol\_Șerban-Ilie, Butacu\_Ionel-Cătălin
+
+***
 
 Taradaciuc_Nicolae, Vicol_Șerban-Ilie, Butacu_Ionel-Cătălin
 
