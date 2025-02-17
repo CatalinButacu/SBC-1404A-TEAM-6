@@ -1,17 +1,17 @@
-|                                                                                                                                            |                  |
-| ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
-| Universitatea Tehnică Gheorghe Asachi din Iași<br />Facultatea de Automatică și Calculatoare<br />Departamentul de Automatică și Informatică Aplicată  | **Proiect SBC**  |
+# Proiect SBC - Sistem Expert pentru Jocul Battleship  
 
-@authors: Taradaciuc\_Nicolae, Vicol\_Șerban-Ilie, Butacu\_Ionel-Cătălin
+
+| Universitatea Tehnică "Gheorghe Asachi" din Iași<br>Facultatea de Automatică și Calculatoare<br>Departamentul de Automatică și Informatică Aplicată | **Proiect SBC** |
+|----------------------------------------------------------------------------------------------------------------------------------------------------|-----------------|
+
+**Autori:**  
+`Taradaciuc_Nicolae`, `Vicol_Șerban-Ilie`, `Butacu_Ionel-Cătălin`
 
 ***
 
-Taradaciuc_Nicolae, Vicol_Șerban-Ilie, Butacu_Ionel-Cătălin
+## Dezvoltarea unui Sistem Expert bazat pe cazuri pentru jocul Battleship  
 
-\<Dezvoltarea unui Sistem Expert bazat pe cazuri pentru jocul
-Battleship\>
-
-**Rezumat**
+### **Rezumat**
 
 În acest proiect s-a dorit realizarea unui sistem expert bazat pe cazuri
 pentru jocul Battleship. Soluția cu care echipa noastră a venit este un
@@ -27,7 +27,7 @@ mecanismele prin care se actualizează cele două terenuri, cât și
 limbajul de programare python pentru realizarea unei interfețe grafice
 intuitive pentru utilizator.
 
-**1. Enunțul problemei. Obiective**
+## **1. Enunțul problemei. Obiective**
 
 Problema propusă spre rezolvare este realizarea unui sistem expert bazat
 pe cazuri capabil să ia decizii privind o nouă mutare cu scopul de a
@@ -58,7 +58,7 @@ Exemplu de ipoteza:
 
 -   Dacă ai atacat o locație, nu o vei putea ataca din nou.
 
-**2. Descrierea universul de discurs**
+## **2. Descrierea universul de discurs**
 
 La începutul jocului, mediul de lucru va conține doar "nave" și
 "poziție_neatacată". Pe parcursul jocului, utilizatorii "player" și
@@ -70,13 +70,13 @@ fiecare porțiune dintr-o "navă" este în întregime transformată în
 "pozitie_nava_atacata", aceasta va deveni "nava_distrusa", iar
 porțiunile vor trece in starea „poziție_navă_distrusă".
 
-**a. Concepte**
+### **a. Concepte**
 
 Conceptele utilizate sunt: poziție_liberă, poziție_atacată, navă,
 poziție_navă_atacată, navă_distrusă, bombă, abilitate, player,
 sistem_expert
 
-**b. Proprietăți**
+### **b. Proprietăți**
 
 Teren T1 poziția (rând, coloana) este liberă.
 
@@ -92,13 +92,13 @@ Sistemul decide.
 
 Sistemul așteaptă.
 
-**c. Relații**
+### **c. Relații**
 
 Teren T1 nava N2 se află pe pozițiile ( x1, y1), (x2, y1), (x3, y1).
 
 Teren T1 poziția (rând, coloana) este atacată cu B.
 
-**d. Acțiuni**
+### **d. Acțiuni**
 
 Acțiunea de a ataca cu B poziția (x, y) din Terenul T1. Aceasta este
 aplicabilă doar daca poziția nu a fost atacata anterior.
@@ -107,7 +107,7 @@ Acțiunea de a scana cu S poziția (x, y) din Terenul T2. Aceasta este
 aplicabila oricând, dar abilitatea nu mai poate fi refolosita timp de 5
 runde.
 
-**3. Scenarii considerate**
+## **3. Scenarii considerate**
 
 Instanța 1: Distrugerea unei poziții de pe tabla de joc
 
@@ -119,7 +119,7 @@ Instanța 2 : Distrugerea unei linii de pe tabla de joc
 Sistemul expert primește comanda de a ataca o poziție de pe tabla de joc
 cu un atac de tip linie.
 
-**4. Strategii de rezolvare**
+## **4. Strategii de rezolvare**
 
 Pentru instanța 1: Distrugerea unei poziții de pe tabla de joc
 
@@ -141,9 +141,9 @@ de joc trebuie distrusă. Acesta va planifica o serie de atacuri de tip
 bombă asupra tuturor pozițiilor de pe acea linie după care va intra
 scenariul de mai sus.
 
-**5. Definirea bazei de fapte**
+## **5. Definirea bazei de fapte**
 
-a\. Tipare de fapte
+### a\. Tipare de fapte
 
 (Teren \<ID_Teren\> poziția \<rând\> \<coloana\> este \<stare\>)
 
@@ -176,7 +176,7 @@ indici_rânduri\>\>\>)
 (frontiera \<rând_colt_stanga_sus\> \<coloana_colt_stanga_sus\>
 \<rând_colt_dreapta_jos\> \<coloana_colt_dreapta_jos\>)
 
-b\. Descriere prin fapte nestructurate
+### b\. Descriere prin fapte nestructurate
 
 Faptele nestructurate din instanța 1:
 
@@ -192,7 +192,7 @@ Faptele nestructurate din instanța 1:
 >
 > (Sistem ataca poziția 6 7 din terenul T1 cu B)
 
-**6. Definirea bazei de reguli**
+## **6. Definirea bazei de reguli**
 
 În situația în care se alege atacarea cu B (bombă) a unei poziții din
 Terenul adversarului, iar poziția nu este atacată anterior atunci
@@ -232,9 +232,9 @@ porțiunea de scanat va fi o matrice de 3x3 cu centrul în poziția
 selectată (?rand, ?coloana) din terenul ?Teren, atunci se va trimite
 mesajul „Există o navă în zona scanată".
 
-**7. Rezolvarea conflictelor**
+## **7. Rezolvarea conflictelor**
 
-**7.1 Cazuri conflictuale**
+### **7.1 Cazuri conflictuale**
 
 Conflict 1:
 
@@ -251,7 +251,7 @@ Actualizare_Teren_atacat_B în timpul rulării regulilor Atac_linie_sistem
 / Atac_linie_jucator ceea ce a dus la diferite erori precum actualizarea
 unei poziții înainte ca atacul liniei să fie finalizat.
 
-**7.2 Strategii de rezolvare conflicte**
+### **7.2 Strategii de rezolvare conflicte**
 
 Rezolvare conflict 1:
 
@@ -269,12 +269,12 @@ priorităților, mărind prioritarea atacului de linie pentru a fi mai mare
 decât regula de actualizare a poziției: Actualizare_Teren_atacat_B (1),
 Atac_linie_sistem (10), Atac_linie_jucator (10).
 
-**8. Schema (logică) de funcționare. Arbore decizional**
+## **8. Schema (logică) de funcționare. Arbore decizional**
 
 ![A diagram of a company Description automatically
 generated](.doc/image1.jpeg)
 
-**9. Utilizare Clips în altă aplicație**
+## **9. Utilizare Clips în altă aplicație**
 
 Limbajul utilizat: Python
 
@@ -322,8 +322,7 @@ precum:
 
 -   Pătrat albastru= Poziție liberă/neatacată
 
--   Pătrat albastru deschis cu simbolul "X" gri = Poziție atacată ( fără
-    navă )
+-   Pătrat albastru deschis cu simbolul "X" gri = Poziție atacată ( fără navă )
 
 -   Pătrat albastru deschis cu simbolul "X" roșu = Nava atacată
 
@@ -331,7 +330,7 @@ precum:
 
 -   Pătrat albastru cu simbolul "?"galben = Navă scanată, dar neatacată
 
-**Concluzii**
+## **Concluzii**
 
 Elemente pozitive:
 
@@ -360,9 +359,6 @@ Posibilități de îmbunătățire:
 -   Îmbunătățirea algoritmului de căutare și atac al sistemului
     (Actualmente, incomplet).
 
-```{=html}
-<!-- -->
-```
 -   Adăugarea unui ghid explicativ cu o scurtă descriere a fiecărui
     nivel de dificultate și a diferențelor dintre acestea.
 
@@ -376,15 +372,10 @@ Posibilități de îmbunătățire:
 -   Adăugarea unei bombe ca obiect de amplasat pe hartă, pentru a crea o
     experiență de joc mai detaliată.
 
-**Bibliografie**
+## **Bibliografie**
 
-\[1\] Panescu D., Pascal C., Programare bazată pe reguli, Îndrumar de
-laborator, Editura Conspress, București, 2013, ISBN 978-973-100-258-3.\
+\[1\] Panescu D., Pascal C., Programare bazată pe reguli, Îndrumar de laborator, Editura Conspress, București, 2013, ISBN 978-973-100-258-3.\
 \[2\] Documentație, librăria clipspy, <https://clipspy.readthedocs.io>\
 \[3\] Documentație, librăria NumPy, <https://numpy.org/>
-
-\[4\] Documentație, librăria PyQt5,
-<https://www.riverbankcomputing.com/static/Docs/PyQt5/>
-
-\[5\] Manual Clips, CLIPS Reference Manual Volume I Basic Programming
-Guide, Version 6.30 March 17th 2015
+\[4\] Documentație, librăria PyQt5, <https://www.riverbankcomputing.com/static/Docs/PyQt5/>
+\[5\] Manual Clips, CLIPS Reference Manual Volume I Basic Programming Guide, Version 6.30 March 17th 2015
